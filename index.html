@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
-  <title>Trap Tracker — Live ISSF</title>
+ <title>Trap Tracker — Aamr Benbrahim</title>
   <style>
     :root{
       --bg:#0b0c10; --card:#12141a; --muted:#9aa3b2; --text:#eef2ff; --border:#232735;
@@ -117,11 +117,23 @@
     .badge.left{border-color:rgba(239,68,68,.35)}
     .badge.center{border-color:rgba(249,115,22,.35)}
     .badge.right{border-color:rgba(234,179,8,.35)}
+    .tierGood{color:var(--green)}
+    .tierMid{color:var(--orange)}
+    .tierLow{color:var(--red)}
+
+    .pillScore{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:6px 10px;border-radius:999px;border:1px solid var(--border);
+      background:#0f1118;font-size:12px;font-weight:950;
+    }
+    .pillScore.good{border-color:rgba(34,197,94,.35)}
+    .pillScore.mid{border-color:rgba(249,115,22,.35)}
+    .pillScore.low{border-color:rgba(239,68,68,.35)}
   </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>Trap Tracker — Live ISSF</h1>
+    <h1>Trap Tracker — Aamr Benbrahim</h1>
     <p class="sub">One tap per target. 25 shots = 5 stations × 5 targets. Colors: Hit=green, Left=red, Center=orange, Right=yellow.</p>
 
     <div class="grid">
@@ -258,27 +270,63 @@
 
         <div style="height:10px"></div>
 
-        <div class="statgrid">
+        <div class="statgrid" style="grid-template-columns:repeat(3,minmax(0,1fr))">
           <div class="stat">
             <div class="k">Average</div>
             <div class="v" id="avgHits">0.0/25</div>
             <div class="s" id="avgHitsSub">Avg hit %: 0%</div>
           </div>
+        
           <div class="stat">
             <div class="k">Best / Worst</div>
             <div class="v" id="bestWorst">—</div>
             <div class="s" id="bestWorstSub">Across selected period</div>
           </div>
+        
           <div class="stat">
             <div class="k">Last 10 rounds</div>
             <div class="v" id="last10">—</div>
             <div class="s" id="last10Sub">Avg hits (if ≥10)</div>
           </div>
-          <div class="stat">
-            <div class="k">Miss breakdown</div>
-            <div class="v" id="missBreak">L 0 • C 0 • R 0</div>
-            <div class="s" id="missBreakSub">Totals (selected period)</div>
+        </div>
+        <div class="divider"></div>
+        
+        <div class="stat" style="background:#0f1118">
+          <div class="k">Average misses per round</div>
+        
+          <div class="row" style="justify-content:space-between; align-items:flex-start; gap:12px; margin-top:6px">
+            <div style="flex:1;text-align:center">
+              <div style="font-weight:950;color:var(--red);font-size:18px" id="avgML">0.0</div>
+              <div class="small">LEFT</div>
+            </div>
+        
+            <div style="flex:1;text-align:center">
+              <div style="font-weight:950;color:var(--orange);font-size:18px" id="avgMC">0.0</div>
+              <div class="small">CENTER</div>
+            </div>
+        
+            <div style="flex:1;text-align:center">
+              <div style="font-weight:950;color:var(--yellow);font-size:18px" id="avgMR">0.0</div>
+              <div class="small">RIGHT</div>
+            </div>
           </div>
+        
+          <!-- Simple trajectory diagram -->
+          <svg viewBox="0 0 320 90" width="100%" height="90" style="margin-top:8px">
+            <!-- Left -->
+            <path d="M160 80 C120 60, 90 40, 60 18" fill="none" stroke="var(--red)" stroke-width="6" stroke-linecap="round"/>
+            <!-- Center -->
+            <path d="M160 80 C160 58, 160 40, 160 16" fill="none" stroke="var(--orange)" stroke-width="6" stroke-linecap="round"/>
+            <!-- Right -->
+            <path d="M160 80 C200 60, 230 40, 260 18" fill="none" stroke="var(--yellow)" stroke-width="6" stroke-linecap="round"/>
+        
+            <!-- Small “house” / origin point -->
+            <circle cx="160" cy="80" r="7" fill="#0f1118" stroke="var(--border)" stroke-width="2"/>
+          </svg>
+        
+          <div class="s" id="missDiagramSub">Based on selected period</div>
+        </div>
+
         </div>
 
         <div class="divider"></div>
@@ -645,6 +693,23 @@
     const totalL = list.reduce((s,r)=>s+(r.ml||0),0);
     const totalC = list.reduce((s,r)=>s+(r.mc||0),0);
     const totalR = list.reduce((s,r)=>s+(r.mr||0),0);
+        // average misses per round
+    const avgML = totalL / list.length;
+    const avgMC = totalC / list.length;
+    const avgMR = totalR / list.length;
+    
+    $("avgML").textContent = avgML.toFixed(1);
+    $("avgMC").textContent = avgMC.toFixed(1);
+    $("avgMR").textContent = avgMR.toFixed(1);
+    
+    $("missDiagramSub").textContent = `Avg misses per round (selected period)`;
+
+    $("avgML").textContent = "0.0";
+    $("avgMC").textContent = "0.0";
+    $("avgMR").textContent = "0.0";
+    $("missDiagramSub").textContent = "Based on selected period";
+
+
 
     const avgHits = totalHit / list.length;
     const avgPct = pct(totalHit, list.length*25);
@@ -671,8 +736,25 @@
     $("avgHits").textContent = `${avgHits.toFixed(1)}/25`;
     $("avgHitsSub").textContent = `Avg hit %: ${avgPct}%`;
 
-    $("bestWorst").textContent = `${best}/25 • ${worst}/25`;
-    $("bestWorstSub").textContent = `Best / Worst`;
+    function tier(score){
+      if(score >= 20) return "good";
+      if(score >= 18) return "mid";
+      return "low";
+    }
+    function tierLabel(score){
+          const t = tier(score);
+          if(t==="good") return "good";
+          if(t==="mid") return "mid";
+          return "low";
+    }
+
+    const bestStar = best >= 23 ? " ⭐" : "";
+    $("bestWorst").innerHTML = `
+      <span class="pillScore ${tier(best)}">Best: ${best}/25${bestStar}</span>
+      <span class="pillScore ${tier(worst)}">Worst: ${worst}/25</span>
+    `;
+    $("bestWorstSub").textContent = `Colors: ≥20 green • 18–19 orange • <18 red`;
+
 
     if(last10List.length >= 10){
       $("last10").textContent = `${last10Avg.toFixed(1)}/25`;
