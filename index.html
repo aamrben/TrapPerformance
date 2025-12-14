@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
- <title>Trap Tracker — Aamr Benbrahim</title>
+  <title>Trap Tracker — Aamr Benbrahim</title>
   <style>
     :root{
       --bg:#0b0c10; --card:#12141a; --muted:#9aa3b2; --text:#eef2ff; --border:#232735;
@@ -21,7 +21,6 @@
 
     .card{background:rgba(18,20,26,.92);border:1px solid var(--border);border-radius:18px;padding:12px;box-shadow:var(--shadow)}
     .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    .col{display:flex;flex-direction:column;gap:6px}
     label{font-size:12px;color:var(--muted);display:block;margin:0 0 6px}
     input, textarea, select{
       width:100%; padding:10px 12px; border-radius:14px; border:1px solid var(--border);
@@ -37,7 +36,6 @@
     .btn:active{transform:scale(.99)}
     .btn.primary{background:#1b2030;border-color:#2a3150}
     .btn.danger{background:#2a1212;border-color:#4b1f1f}
-    .btn.ghost{background:transparent}
 
     /* BIG tap buttons */
     .tapGrid{display:grid;grid-template-columns:1fr 1fr; gap:10px}
@@ -117,18 +115,18 @@
     .badge.left{border-color:rgba(239,68,68,.35)}
     .badge.center{border-color:rgba(249,115,22,.35)}
     .badge.right{border-color:rgba(234,179,8,.35)}
-    .tierGood{color:var(--green)}
-    .tierMid{color:var(--orange)}
-    .tierLow{color:var(--red)}
 
+    /* Best/Worst pills */
     .pillScore{
       display:inline-flex;align-items:center;gap:6px;
       padding:6px 10px;border-radius:999px;border:1px solid var(--border);
       background:#0f1118;font-size:12px;font-weight:950;
+      margin-right:6px;
+      white-space:nowrap;
     }
-    .pillScore.good{border-color:rgba(34,197,94,.35)}
-    .pillScore.mid{border-color:rgba(249,115,22,.35)}
-    .pillScore.low{border-color:rgba(239,68,68,.35)}
+    .pillScore.good{border-color:rgba(34,197,94,.35); color:var(--green)}
+    .pillScore.mid{border-color:rgba(249,115,22,.35); color:var(--orange)}
+    .pillScore.low{border-color:rgba(239,68,68,.35); color:var(--red)}
   </style>
 </head>
 <body>
@@ -270,63 +268,58 @@
 
         <div style="height:10px"></div>
 
+        <!-- Top 3 stats -->
         <div class="statgrid" style="grid-template-columns:repeat(3,minmax(0,1fr))">
           <div class="stat">
             <div class="k">Average</div>
             <div class="v" id="avgHits">0.0/25</div>
             <div class="s" id="avgHitsSub">Avg hit %: 0%</div>
           </div>
-        
+
           <div class="stat">
             <div class="k">Best / Worst</div>
             <div class="v" id="bestWorst">—</div>
-            <div class="s" id="bestWorstSub">Across selected period</div>
+            <div class="s" id="bestWorstSub">Colors: ≥20 green • 18–19 orange • <18 red</div>
           </div>
-        
+
           <div class="stat">
             <div class="k">Last 10 rounds</div>
             <div class="v" id="last10">—</div>
             <div class="s" id="last10Sub">Avg hits (if ≥10)</div>
           </div>
         </div>
+
+        <!-- Miss diagram -->
         <div class="divider"></div>
-        
+
         <div class="stat" style="background:#0f1118">
           <div class="k">Average misses per round</div>
-        
+
           <div class="row" style="justify-content:space-between; align-items:flex-start; gap:12px; margin-top:6px">
             <div style="flex:1;text-align:center">
               <div style="font-weight:950;color:var(--red);font-size:18px" id="avgML">0.0</div>
               <div class="small">LEFT</div>
             </div>
-        
+
             <div style="flex:1;text-align:center">
               <div style="font-weight:950;color:var(--orange);font-size:18px" id="avgMC">0.0</div>
               <div class="small">CENTER</div>
             </div>
-        
+
             <div style="flex:1;text-align:center">
               <div style="font-weight:950;color:var(--yellow);font-size:18px" id="avgMR">0.0</div>
               <div class="small">RIGHT</div>
             </div>
           </div>
-        
-          <!-- Simple trajectory diagram -->
+
           <svg viewBox="0 0 320 90" width="100%" height="90" style="margin-top:8px">
-            <!-- Left -->
             <path d="M160 80 C120 60, 90 40, 60 18" fill="none" stroke="var(--red)" stroke-width="6" stroke-linecap="round"/>
-            <!-- Center -->
             <path d="M160 80 C160 58, 160 40, 160 16" fill="none" stroke="var(--orange)" stroke-width="6" stroke-linecap="round"/>
-            <!-- Right -->
             <path d="M160 80 C200 60, 230 40, 260 18" fill="none" stroke="var(--yellow)" stroke-width="6" stroke-linecap="round"/>
-        
-            <!-- Small “house” / origin point -->
             <circle cx="160" cy="80" r="7" fill="#0f1118" stroke="var(--border)" stroke-width="2"/>
           </svg>
-        
-          <div class="s" id="missDiagramSub">Based on selected period</div>
-        </div>
 
+          <div class="s" id="missDiagramSub">Based on selected period</div>
         </div>
 
         <div class="divider"></div>
@@ -385,12 +378,12 @@
     </div>
 
     <p class="small" style="margin:14px 2px 28px">
-      If you want: station-by-station stats (S1..S5 miss patterns) + vibration feedback per shot.
+      Next upgrades: station-by-station stats (S1..S5 patterns) + vibration feedback per shot.
     </p>
   </div>
 
 <script>
-  const KEY = "trap_tracker_live_issf_v2";
+  const KEY = "trap_tracker_live_issf_v3_aamr";
   const $ = (id) => document.getElementById(id);
 
   const pct = (a,b)=> b? Math.round((a/b)*1000)/10 : 0;
@@ -414,9 +407,8 @@
   }
 
   function startOfWeek(d){
-    // Monday as start
     const x = new Date(d);
-    const day = (x.getDay() + 6) % 7; // Mon=0
+    const day = (x.getDay() + 6) % 7; // Monday = 0
     x.setDate(x.getDate() - day);
     x.setHours(0,0,0,0);
     return x;
@@ -437,7 +429,6 @@
     return x;
   }
   function parseISODate(iso){
-    // iso = YYYY-MM-DD
     const [y,m,dd] = (iso||"").split("-").map(Number);
     if(!y||!m||!dd) return null;
     const x = new Date(y, m-1, dd);
@@ -561,7 +552,6 @@
 
     liveShots = [];
     $("notes").value = "";
-    // keep club/field for convenience
     renderAll();
   });
 
@@ -597,7 +587,7 @@
     savedClub.value = clubs.includes(keepSC) ? keepSC : "all";
     savedField.value = fields.includes(keepSF) ? keepSF : "all";
 
-    // Month dropdown (past months available)
+    // Month dropdown
     const monthSel = $("monthSel");
     const monthKeys = unique(rounds.map(r => {
       const d = parseISODate(r.date);
@@ -637,7 +627,7 @@
       start = startOfMonth(now);
       end = addMonths(start, 1);
     } else if(range === "last3"){
-      end = addMonths(startOfMonth(now), 1); // include this month up to next month boundary
+      end = addMonths(startOfMonth(now), 1);
       start = addMonths(end, -3);
     } else if(range === "last6"){
       end = addMonths(startOfMonth(now), 1);
@@ -660,17 +650,18 @@
     });
   }
 
+  function tier(score){
+    if(score >= 20) return "good";
+    if(score >= 18) return "mid";
+    return "low";
+  }
+
   function renderOverview(){
-    // Enable/disable month selector based on rangeSel
     const isMonthPick = $("rangeSel").value === "monthPick";
     $("monthSel").disabled = !isMonthPick;
 
     let list = rounds.slice();
-
-    // meta filters
     list = filterByMeta(list, $("clubSel").value, $("fieldSel").value);
-
-    // range filter
     list = filterByRange(list);
 
     $("rangeCount").textContent = `${list.length} rounds`;
@@ -679,11 +670,12 @@
       $("avgHits").textContent = "0.0/25";
       $("avgHitsSub").textContent = "Avg hit %: 0%";
       $("bestWorst").textContent = "—";
-      $("bestWorstSub").textContent = "Across selected period";
       $("last10").textContent = "—";
       $("last10Sub").textContent = "Avg hits (if ≥10)";
-      $("missBreak").textContent = "L 0 • C 0 • R 0";
-      $("missBreakSub").textContent = "Totals (selected period)";
+      $("avgML").textContent = "0.0";
+      $("avgMC").textContent = "0.0";
+      $("avgMR").textContent = "0.0";
+      $("missDiagramSub").textContent = "Based on selected period";
       $("mostMissedBadge").style.display = "none";
       $("insightBadge").style.display = "none";
       return;
@@ -693,38 +685,18 @@
     const totalL = list.reduce((s,r)=>s+(r.ml||0),0);
     const totalC = list.reduce((s,r)=>s+(r.mc||0),0);
     const totalR = list.reduce((s,r)=>s+(r.mr||0),0);
-        // average misses per round
-    const avgML = totalL / list.length;
-    const avgMC = totalC / list.length;
-    const avgMR = totalR / list.length;
-    
-    $("avgML").textContent = avgML.toFixed(1);
-    $("avgMC").textContent = avgMC.toFixed(1);
-    $("avgMR").textContent = avgMR.toFixed(1);
-    
-    $("missDiagramSub").textContent = `Avg misses per round (selected period)`;
-
-    $("avgML").textContent = "0.0";
-    $("avgMC").textContent = "0.0";
-    $("avgMR").textContent = "0.0";
-    $("missDiagramSub").textContent = "Based on selected period";
-
-
 
     const avgHits = totalHit / list.length;
     const avgPct = pct(totalHit, list.length*25);
 
-    // best/worst
     const scores = list.map(r=> (r.hit||0));
     const best = Math.max(...scores);
     const worst = Math.min(...scores);
 
-    // last 10 avg (by createdAt desc)
     const byRecent = list.slice().sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
     const last10List = byRecent.slice(0,10);
     const last10Avg = last10List.length ? (last10List.reduce((s,r)=>s+(r.hit||0),0) / last10List.length) : null;
 
-    // most missed direction
     const misses = [
       {k:"LEFT", v: totalL, cls:"left", dot:"var(--red)"},
       {k:"CENTER", v: totalC, cls:"center", dot:"var(--orange)"},
@@ -736,25 +708,11 @@
     $("avgHits").textContent = `${avgHits.toFixed(1)}/25`;
     $("avgHitsSub").textContent = `Avg hit %: ${avgPct}%`;
 
-    function tier(score){
-      if(score >= 20) return "good";
-      if(score >= 18) return "mid";
-      return "low";
-    }
-    function tierLabel(score){
-          const t = tier(score);
-          if(t==="good") return "good";
-          if(t==="mid") return "mid";
-          return "low";
-    }
-
     const bestStar = best >= 23 ? " ⭐" : "";
     $("bestWorst").innerHTML = `
       <span class="pillScore ${tier(best)}">Best: ${best}/25${bestStar}</span>
       <span class="pillScore ${tier(worst)}">Worst: ${worst}/25</span>
     `;
-    $("bestWorstSub").textContent = `Colors: ≥20 green • 18–19 orange • <18 red`;
-
 
     if(last10List.length >= 10){
       $("last10").textContent = `${last10Avg.toFixed(1)}/25`;
@@ -764,10 +722,15 @@
       $("last10Sub").textContent = `Need 10 rounds (you have ${last10List.length})`;
     }
 
-    $("missBreak").textContent = `L ${totalL} • C ${totalC} • R ${totalR}`;
-    $("missBreakSub").textContent = `Totals (selected period)`;
+    const avgML = totalL / list.length;
+    const avgMC = totalC / list.length;
+    const avgMR = totalR / list.length;
 
-    // badges
+    $("avgML").textContent = avgML.toFixed(1);
+    $("avgMC").textContent = avgMC.toFixed(1);
+    $("avgMR").textContent = avgMR.toFixed(1);
+    $("missDiagramSub").textContent = `Avg misses per round (selected period)`;
+
     const badge = $("mostMissedBadge");
     badge.className = `badge ${topMiss.cls}`;
     badge.style.display = "inline-flex";
@@ -775,15 +738,13 @@
 
     const insight = $("insightBadge");
     insight.style.display = "inline-flex";
-    // simple insight: if center dominates, suggest timing; if sides dominate, suggest hold/offline
     let text = "";
     if(topMiss.k === "CENTER") text = "Focus: timing + trigger discipline";
-    if(topMiss.k === "LEFT") text = "Focus: move line to LEFT targets";
-    if(topMiss.k === "RIGHT") text = "Focus: keep gun moving through RIGHT";
+    if(topMiss.k === "LEFT") text = "Focus: line & move for LEFT targets";
+    if(topMiss.k === "RIGHT") text = "Focus: keep moving through RIGHT";
     insight.className = "badge";
     insight.innerHTML = `🎯 ${text}`;
 
-    // subtitle
     const r = $("rangeSel").value;
     const label =
       r==="today" ? "Today" :
@@ -814,13 +775,11 @@
       $("savedDate").disabled = true;
     }
 
-    // club/field filters
     list = filterByMeta(list, $("savedClub").value, $("savedField").value);
-
-    // sort newest
     list.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
 
     $("countLine").textContent = `${rounds.length} total • ${list.length} shown`;
+
     const container = $("list");
     container.innerHTML = "";
     $("empty").style.display = list.length ? "none" : "block";
@@ -891,10 +850,7 @@
   }
 
   // Overview controls
-  $("rangeSel").addEventListener("change", ()=>{
-    // if switching away from monthPick, disable monthSel
-    renderOverview();
-  });
+  $("rangeSel").addEventListener("change", renderOverview);
   $("monthSel").addEventListener("change", renderOverview);
   $("clubSel").addEventListener("change", renderOverview);
   $("fieldSel").addEventListener("change", renderOverview);
@@ -905,7 +861,7 @@
   $("savedClub").addEventListener("change", renderSaved);
   $("savedField").addEventListener("change", renderSaved);
 
-  // Initial render
+  // first render
   renderAll();
 </script>
 </body>
