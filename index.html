@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+  <title>Trap Tracker — Live ISSF</title>
+  <style>
+    :root{
+      --bg:#0b0c10; --card:#12141a; --muted:#9aa3b2; --text:#eef2ff; --border:#232735;
+      --green:#22c55e; --red:#ef4444; --orange:#f97316; --yellow:#eab308;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+    *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial;
+      background:linear-gradient(180deg,#090a0f,#0b0c10); color:var(--text)}
+    .wrap{max-width:980px;margin:0 auto;padding:14px}
+    h1{margin:6px 0 2px;font-size:20px}
+    .sub{color:var(--muted);font-size:13px;margin:0 0 12px}
+    .grid{display:grid;gap:12px}
+    @media(min-width:900px){ .grid{grid-template-columns: 1.25fr .95fr} }
+
+    .card{background:rgba(18,20,26,.92);border:1px solid var(--border);border-radius:18px;padding:12px;box-shadow:var(--shadow)}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    label{font-size:12px;color:var(--muted);display:block;margin:0 0 6px}
+    input, textarea, select{
+      width:100%; padding:10px 12px; border-radius:14px; border:1px solid var(--border);
+      background:#0f1118; color:var(--text); outline:none;
+    }
+    textarea{min-height:74px; resize:vertical}
+
+    .btn{
+      border:1px solid var(--border); background:#0f1118; color:var(--text);
+      padding:10px 12px; border-radius:16px; font-weight:700;
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    }
+    .btn:active{transform:scale(.99)}
+    .btn.primary{background:#1b2030;border-color:#2a3150}
+    .btn.danger{background:#2a1212;border-color:#4b1f1f}
+    .btn.ghost{background:transparent}
+
+    /* BIG tap buttons */
+    .tapGrid{display:grid;grid-template-columns:1fr 1fr; gap:10px}
+    .tap{
+      padding:18px 14px; border-radius:18px; border:1px solid var(--border);
+      font-size:18px; font-weight:900; letter-spacing:.2px;
+      box-shadow: 0 8px 20px rgba(0,0,0,.25);
+      min-height:64px;
+    }
+    .tap small{display:block; font-size:12px; font-weight:700; opacity:.85; margin-top:4px}
+    .tap.hit{background:rgba(34,197,94,.14); border-color:rgba(34,197,94,.35)}
+    .tap.left{background:rgba(239,68,68,.12); border-color:rgba(239,68,68,.28)}
+    .tap.center{background:rgba(249,115,22,.12); border-color:rgba(249,115,22,.30)}
+    .tap.right{background:rgba(234,179,8,.12); border-color:rgba(234,179,8,.30)}
+
+    .statgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+    .stat{border:1px solid var(--border);border-radius:16px;padding:10px;background:#0f1118}
+    .stat .k{font-size:11px;color:var(--muted)}
+    .stat .v{font-size:18px;font-weight:900;margin-top:3px}
+
+    .pill{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+    .dot{width:10px;height:10px;border-radius:999px}
+
+    /* 25-shot grid */
+    .shotsWrap{margin-top:10px}
+    .shotGrid{
+      display:grid;
+      grid-template-columns:repeat(5, 1fr);
+      gap:8px;
+    }
+    .shot{
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:10px 8px;
+      background:#0f1118;
+      text-align:center;
+      font-weight:900;
+      position:relative;
+      min-height:48px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+    }
+    .shot .meta{font-size:10px;font-weight:700;color:var(--muted);margin-top:3px}
+    .shot.hit{background:rgba(34,197,94,.10); border-color:rgba(34,197,94,.30); color:var(--green)}
+    .shot.l{background:rgba(239,68,68,.10); border-color:rgba(239,68,68,.26); color:var(--red)}
+    .shot.c{background:rgba(249,115,22,.10); border-color:rgba(249,115,22,.26); color:var(--orange)}
+    .shot.r{background:rgba(234,179,8,.12); border-color:rgba(234,179,8,.26); color:var(--yellow)}
+    .shot.pending{opacity:.55}
+
+    .divider{height:1px;background:var(--border);margin:12px 0}
+    .small{font-size:12px;color:var(--muted)}
+    .list{display:grid;grid-template-columns:1fr;gap:10px}
+    @media(min-width:560px){ .list{grid-template-columns:1fr 1fr} }
+
+    .round{border:1px solid var(--border);border-radius:18px;overflow:hidden;background:#0f1118}
+    .roundHead{padding:12px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;gap:10px}
+    .meta2{font-size:12px;color:var(--muted)}
+    .mini{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:12px}
+    .box{border:1px solid var(--border);border-radius:16px;padding:10px}
+    .box .k{font-size:11px;color:var(--muted)}
+    .box .v{font-size:18px;font-weight:900;margin-top:4px}
+    .g{background:rgba(34,197,94,.08)} .rr{background:rgba(239,68,68,.08)}
+    .oo{background:rgba(249,115,22,.08)} .yy{background:rgba(234,179,8,.08)}
+    .notes{padding:12px;color:#d7def0;font-size:13px;white-space:pre-wrap}
+
+    .topBar{display:flex;gap:10px;flex-wrap:wrap;align-items:end}
+    .topBar > div{flex:1;min-width:160px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Trap Tracker — Live ISSF</h1>
+    <p class="sub">One tap per target. 25 shots = 5 stations × 5 targets. Colors: Hit=green, Left=red, Center=orange, Right=yellow.</p>
+
+    <div class="grid">
+      <!-- LIVE ROUND -->
+      <div class="card">
+        <div class="row" style="justify-content:space-between">
+          <div>
+            <div style="font-weight:900;font-size:16px">Live Round Mode</div>
+            <div class="small" id="statusLine">Ready.</div>
+          </div>
+          <div class="row" style="gap:8px">
+            <button class="btn" id="undoBtn">↩︎ Undo</button>
+            <button class="btn danger" id="resetRoundBtn">Reset round</button>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="statgrid">
+          <div class="stat"><div class="k">Station</div><div class="v" id="stationV">1/5</div></div>
+          <div class="stat"><div class="k">Shot</div><div class="v" id="shotV">0/25</div></div>
+          <div class="stat"><div class="k">Score</div><div class="v" id="scoreV">0/25</div></div>
+          <div class="stat"><div class="k">Hit %</div><div class="v" id="hitPctV">0%</div></div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="tapGrid">
+          <button class="btn tap hit" id="tapHit">✅ HIT<small>Green</small></button>
+          <button class="btn tap left" id="tapLeft">❌ MISS LEFT<small>Red</small></button>
+          <button class="btn tap center" id="tapCenter">❌ MISS CENTER<small>Orange</small></button>
+          <button class="btn tap right" id="tapRight">❌ MISS RIGHT<small>Yellow</small></button>
+        </div>
+
+        <div class="shotsWrap">
+          <div class="row" style="justify-content:space-between; margin-top:12px">
+            <div class="row" style="gap:10px">
+              <div class="pill"><span class="dot" style="background:var(--green)"></span>Hit</div>
+              <div class="pill"><span class="dot" style="background:var(--red)"></span>Left</div>
+              <div class="pill"><span class="dot" style="background:var(--orange)"></span>Center</div>
+              <div class="pill"><span class="dot" style="background:var(--yellow)"></span>Right</div>
+            </div>
+            <div class="small">Tap buttons above, grid fills automatically.</div>
+          </div>
+
+          <div class="shotGrid" id="shotGrid" style="margin-top:10px"></div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="row">
+          <div style="flex:1;min-width:160px">
+            <label>Date</label>
+            <input id="date" type="date" />
+          </div>
+          <div style="flex:1;min-width:160px">
+            <label>Club / Field (optional)</label>
+            <input id="club" placeholder="e.g. Rabat — Field 1" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div style="flex:1;min-width:160px">
+            <label>Notes (optional)</label>
+            <textarea id="notes" placeholder="Wind, light, ammo, focus cue, what felt off..."></textarea>
+          </div>
+        </div>
+
+        <div class="row" style="justify-content:space-between; margin-top:8px">
+          <div class="small">When you reach 25/25, you can save the round.</div>
+          <button class="btn primary" id="saveRoundBtn">Save round</button>
+        </div>
+      </div>
+
+      <!-- OVERVIEW / TOOLS -->
+      <div class="card">
+        <div style="font-weight:900;font-size:16px">Overview</div>
+        <div class="small">Totals across saved rounds</div>
+
+        <div class="divider"></div>
+
+        <div class="statgrid">
+          <div class="stat"><div class="k">Rounds</div><div class="v" id="tRounds">0</div></div>
+          <div class="stat"><div class="k">Targets</div><div class="v" id="tTargets">0</div></div>
+          <div class="stat"><div class="k">Hit %</div><div class="v" id="tHit">0%</div></div>
+          <div class="stat"><div class="k">Miss %</div><div class="v" id="tMiss">0%</div></div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="topBar">
+          <div>
+            <label>Search</label>
+            <input id="q" placeholder="windy, field 2, 2025-12-14..." />
+          </div>
+          <div>
+            <label>Sort</label>
+            <select id="sort">
+              <option value="newest">Newest</option>
+              <option value="best">Best hit %</option>
+              <option value="worst">Worst hit %</option>
+            </select>
+          </div>
+          <div style="flex:0;min-width:auto">
+            <button class="btn" id="exportBtn">Export</button>
+          </div>
+          <div style="flex:0;min-width:auto">
+            <label class="btn" style="cursor:pointer">
+              Import <input id="importFile" type="file" accept="application/json" style="display:none">
+            </label>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <div class="small">
+          Tip: Add to Home Screen from Safari for full “app” feeling.
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="card" style="margin-top:12px">
+      <div class="row" style="justify-content:space-between">
+        <div>
+          <div style="font-weight:900;font-size:16px">Saved Rounds</div>
+          <div class="small" id="countLine">0 total</div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="list" id="list"></div>
+      <div id="empty" class="small" style="display:none;margin-top:10px">No rounds yet — shoot a live round and save it.</div>
+    </div>
+
+    <p class="small" style="margin:14px 2px 28px">
+      ISSF live mode: 5 stations × 5 targets = 25. (If you want 125 training sessions, we can add multi-round session mode next.)
+    </p>
+  </div>
+
+<script>
+  const KEY = "trap_tracker_live_issf_v1";
+  const $ = (id) => document.getElementById(id);
+
+  const pct = (a,b)=> b? Math.round((a/b)*1000)/10 : 0;
+
+  function todayISO(){
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth()+1).padStart(2,"0");
+    const dd = String(d.getDate()).padStart(2,"0");
+    return `${yyyy}-${mm}-${dd}`;
+  }
+  $("date").value = todayISO();
+
+  function uid(){
+    return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2,9)}`;
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"\"":'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function load(){
+    try{
+      const raw = localStorage.getItem(KEY);
+      const list = raw ? JSON.parse(raw) : [];
+      return Array.isArray(list) ? list : [];
+    }catch{ return []; }
+  }
+  function save(list){ localStorage.setItem(KEY, JSON.stringify(list)); }
+
+  // LIVE ROUND STATE (25 shots)
+  // Each entry is one of: 'H', 'L', 'C', 'R'
+  let liveShots = []; // length 0..25
+
+  let rounds = load();
+
+  function countsFromShots(shots){
+    let hit=0, ml=0, mc=0, mr=0;
+    for(const s of shots){
+      if(s==="H") hit++;
+      else if(s==="L") ml++;
+      else if(s==="C") mc++;
+      else if(s==="R") mr++;
+    }
+    return {shots: 25, hit, ml, mc, mr};
+  }
+
+  function stationIndexFromShotIndex(i){ // i: 0..24
+    return Math.min(4, Math.floor(i/5)); // 0..4
+  }
+
+  function renderLive(){
+    const idx = liveShots.length; // next slot index
+    const station = stationIndexFromShotIndex(Math.max(0, idx)) + 1; // 1..5
+    const {hit, ml, mc, mr} = countsFromShots(liveShots);
+
+    $("stationV").textContent = `${Math.min(5, station)}/5`;
+    $("shotV").textContent = `${idx}/25`;
+    $("scoreV").textContent = `${hit}/25`;
+    $("hitPctV").textContent = `${pct(hit, Math.max(1, idx))}%`;
+
+    // status line
+    if(idx === 0) $("statusLine").textContent = "Ready. Tap one button per target.";
+    else if(idx < 25) $("statusLine").textContent = `Live… Station ${Math.min(5, station)} • Shot ${idx+1}/25`;
+    else $("statusLine").textContent = "Round complete. Save it or reset.";
+
+    // enable/disable buttons
+    const done = idx >= 25;
+    $("tapHit").disabled = done;
+    $("tapLeft").disabled = done;
+    $("tapCenter").disabled = done;
+    $("tapRight").disabled = done;
+    $("undoBtn").disabled = (idx === 0);
+
+    // 25-shot grid
+    const grid = $("shotGrid");
+    grid.innerHTML = "";
+    for(let i=0;i<25;i++){
+      const s = liveShots[i];
+      const station = Math.floor(i/5) + 1;
+      const inStationShot = (i % 5) + 1;
+      const el = document.createElement("div");
+      el.className = "shot " + (
+        s==="H" ? "hit" :
+        s==="L" ? "l" :
+        s==="C" ? "c" :
+        s==="R" ? "r" : "pending"
+      );
+      const label = s==="H" ? "HIT" : s==="L" ? "LEFT" : s==="C" ? "CENTER" : s==="R" ? "RIGHT" : "—";
+      el.innerHTML = `
+        <div>${label}</div>
+        <div class="meta">S${station} • #${inStationShot}</div>
+      `;
+      grid.appendChild(el);
+    }
+  }
+
+  function pushShot(code){
+    if(liveShots.length >= 25) return;
+    liveShots.push(code);
+    renderLive();
+  }
+
+  $("tapHit").addEventListener("click", ()=>pushShot("H"));
+  $("tapLeft").addEventListener("click", ()=>pushShot("L"));
+  $("tapCenter").addEventListener("click", ()=>pushShot("C"));
+  $("tapRight").addEventListener("click", ()=>pushShot("R"));
+
+  $("undoBtn").addEventListener("click", ()=>{
+    liveShots.pop();
+    renderLive();
+  });
+
+  $("resetRoundBtn").addEventListener("click", ()=>{
+    liveShots = [];
+    renderLive();
+  });
+
+  $("saveRoundBtn").addEventListener("click", ()=>{
+    if(liveShots.length !== 25){
+      $("statusLine").textContent = `You are at ${liveShots.length}/25. Finish the round to save.`;
+      return;
+    }
+    const c = countsFromShots(liveShots);
+    rounds.unshift({
+      id: uid(),
+      date: $("date").value || todayISO(),
+      club: $("club").value.trim(),
+      notes: $("notes").value,
+      liveShots: liveShots.slice(), // keep full pattern
+      ...c,
+      createdAt: Date.now()
+    });
+    save(rounds);
+
+    // reset live inputs
+    liveShots = [];
+    $("notes").value = "";
+    $("club").value = "";
+    renderAll();
+  });
+
+  function renderOverview(){
+    const shots = rounds.reduce((s,r)=>s+(r.shots||0),0);
+    const hit = rounds.reduce((s,r)=>s+(r.hit||0),0);
+    const ml = rounds.reduce((s,r)=>s+(r.ml||0),0);
+    const mc = rounds.reduce((s,r)=>s+(r.mc||0),0);
+    const mr = rounds.reduce((s,r)=>s+(r.mr||0),0);
+    const miss = ml+mc+mr;
+
+    $("tRounds").textContent = rounds.length;
+    $("tTargets").textContent = shots;
+    $("tHit").textContent = pct(hit,shots) + "%";
+    $("tMiss").textContent = pct(miss,shots) + "%";
+    $("countLine").textContent = `${rounds.length} total`;
+  }
+
+  function renderHistory(){
+    const q = $("q").value.trim().toLowerCase();
+    let list = rounds.filter(r=>{
+      if(!q) return true;
+      return (r.date||"").toLowerCase().includes(q)
+        || (r.club||"").toLowerCase().includes(q)
+        || (r.notes||"").toLowerCase().includes(q);
+    });
+
+    const sort = $("sort").value;
+    if(sort==="newest") list.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+    if(sort==="best") list.sort((a,b)=>((b.hit/b.shots)||0)-((a.hit/a.shots)||0));
+    if(sort==="worst") list.sort((a,b)=>((a.hit/a.shots)||0)-((b.hit/b.shots)||0));
+
+    const container = $("list");
+    container.innerHTML = "";
+    $("empty").style.display = list.length ? "none" : "block";
+
+    for(const r of list){
+      const miss = (r.ml||0)+(r.mc||0)+(r.mr||0);
+      const el = document.createElement("div");
+      el.className = "round";
+
+      // quick pattern preview (station 1..5 as 5 icons each)
+      const shotsArr = Array.isArray(r.liveShots) ? r.liveShots : [];
+      const preview = shotsArr.slice(0,25).map((s,i)=>{
+        const cls = s==="H" ? "hit" : s==="L" ? "l" : s==="C" ? "c" : s==="R" ? "r" : "pending";
+        const ch = s==="H" ? "✓" : s==="L" ? "L" : s==="C" ? "C" : s==="R" ? "R" : "·";
+        return `<span style="
+          display:inline-flex;align-items:center;justify-content:center;
+          width:22px;height:22px;border-radius:8px;border:1px solid var(--border);
+          margin:2px;font-weight:900;font-size:12px;
+          ${cls==='hit'?'background:rgba(34,197,94,.10);color:var(--green);border-color:rgba(34,197,94,.28)':''}
+          ${cls==='l'?'background:rgba(239,68,68,.10);color:var(--red);border-color:rgba(239,68,68,.25)':''}
+          ${cls==='c'?'background:rgba(249,115,22,.10);color:var(--orange);border-color:rgba(249,115,22,.25)':''}
+          ${cls==='r'?'background:rgba(234,179,8,.10);color:var(--yellow);border-color:rgba(234,179,8,.25)':''}
+        ">${ch}</span>`;
+      }).join("");
+
+      el.innerHTML = `
+        <div class="roundHead">
+          <div>
+            <div style="font-weight:900">${r.date || ""} <span class="meta2">${r.club ? "• "+escapeHtml(r.club) : ""}</span></div>
+            <div class="meta2">Score: <b>${r.hit}/25</b> • Hit ${pct(r.hit,25)}% • Miss ${pct(miss,25)}%</div>
+          </div>
+          <button class="btn danger" data-del="${r.id}">Delete</button>
+        </div>
+
+        <div style="padding:10px 12px;border-bottom:1px solid var(--border)">
+          <div class="small" style="margin-bottom:6px">Pattern (✓ hit, L/C/R miss type)</div>
+          <div style="display:flex;flex-wrap:wrap;gap:0">${preview || "<span class='small'>No pattern saved.</span>"}</div>
+        </div>
+
+        <div class="mini">
+          <div class="box g"><div class="k">Hit</div><div class="v" style="color:var(--green)">${r.hit}</div></div>
+          <div class="box rr"><div class="k">Miss Left</div><div class="v" style="color:var(--red)">${r.ml}</div></div>
+          <div class="box oo"><div class="k">Miss Center</div><div class="v" style="color:var(--orange)">${r.mc}</div></div>
+          <div class="box yy"><div class="k">Miss Right</div><div class="v" style="color:var(--yellow)">${r.mr}</div></div>
+        </div>
+        <div class="notes">${r.notes ? escapeHtml(r.notes) : "<span class='meta2'>No notes.</span>"}</div>
+      `;
+      container.appendChild(el);
+    }
+
+    container.querySelectorAll("[data-del]").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const id = btn.getAttribute("data-del");
+        rounds = rounds.filter(r=>r.id!==id);
+        save(rounds);
+        renderAll();
+      });
+    });
+  }
+
+  function renderAll(){
+    renderLive();
+    renderOverview();
+    renderHistory();
+  }
+
+  $("q").addEventListener("input", renderHistory);
+  $("sort").addEventListener("change", renderHistory);
+
+  $("exportBtn").addEventListener("click", ()=>{
+    const payload = {version:1, exportedAt: new Date().toISOString(), rounds};
+    const blob = new Blob([JSON.stringify(payload,null,2)], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `trap-scores-live-${todayISO()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  });
+
+  $("importFile").addEventListener("change", (e)=>{
+    const file = e.target.files && e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      try{
+        const data = JSON.parse(String(reader.result||""));
+        const list = Array.isArray(data) ? data : (Array.isArray(data.rounds) ? data.rounds : []);
+        const map = new Map(rounds.map(r=>[r.id,r]));
+        for(const r of list){
+          if(!r || typeof r !== "object") continue;
+          const id = String(r.id || uid());
+          map.set(id, {
+            id,
+            date: String(r.date || todayISO()),
+            club: String(r.club || ""),
+            notes: String(r.notes || ""),
+            shots: 25,
+            hit: Number(r.hit||0),
+            ml: Number(r.ml||0),
+            mc: Number(r.mc||0),
+            mr: Number(r.mr||0),
+            liveShots: Array.isArray(r.liveShots) ? r.liveShots.slice(0,25) : [],
+            createdAt: Number(r.createdAt || Date.now())
+          });
+        }
+        rounds = Array.from(map.values()).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+        save(rounds);
+        renderAll();
+      } catch {}
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  });
+
+  // initial paint
+  renderAll();
+</script>
+</body>
+</html>
