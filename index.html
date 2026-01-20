@@ -512,10 +512,11 @@
             <path d="M30 100 H350" fill="none" stroke="var(--border)" stroke-width="1" opacity="0.5"/>
         
             <!-- labels -->
-            <text x="6" y="16" fill="var(--muted)" font-size="10" font-weight="900">25</text>
-            <text x="10" y="46" fill="var(--muted)" font-size="10" font-weight="900">18</text>
-            <text x="10" y="76" fill="var(--muted)" font-size="10" font-weight="900">12</text>
-            <text x="10" y="106" fill="var(--muted)" font-size="10" font-weight="900">6</text>
+           <text x="6" y="16" fill="var(--muted)" font-size="10" font-weight="900">25</text>
+           <text x="10" y="46" fill="var(--muted)" font-size="10" font-weight="900">20</text>
+           <text x="10" y="76" fill="var(--muted)" font-size="10" font-weight="900">15</text>
+           <text x="10" y="106" fill="var(--muted)" font-size="10" font-weight="900">10</text>
+
         
             <!-- plot -->
             <path id="scoreTrendPath" d="" fill="none" stroke="var(--g1)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
@@ -970,10 +971,10 @@
     const n = pts.length;
     const xAt = (i)=> left + (n===1 ? plotW/2 : (i/(n-1))*plotW);
   
-    // y maps score 0..25 to bottom..top
+    // y maps score 10..25 to bottom..top
     const yAtScore = (score)=>{
-      const s = Math.max(0, Math.min(25, score||0));
-      return bottom - (s/25)*plotH;
+      const s = Math.max(10, Math.min(25, score||10));
+      return bottom - ((s - 10) / 15) * plotH; // 15 = (25-10)
     };
   
     const coords = pts.map((r,i)=>({
