@@ -505,8 +505,13 @@
           <label>Show</label>
           <select id="savedRange">
             <option value="today">Today</option>
-            <option value="day">A specific day…</option>
+            <option value="week">This week</option>
+            <option value="month">This month</option>
+            <option value="last3">Last 3 months</option>
+            <option value="last6">Last 6 months</option>
+            <option value="year">This year</option>
             <option value="all">All rounds</option>
+            <option value="day">A specific day…</option>
           </select>
         </div>
 
@@ -1002,23 +1007,7 @@
   }
 
   function renderSaved(){
-    let list = rounds.slice();
-
-    const mode = $("savedRange").value;
-    const today = todayISO();
-    if(mode === "today"){
-      list = list.filter(r => (r.date||"") === today);
-      $("savedDate").disabled = true;
-    } else if(mode === "day"){
-      $("savedDate").disabled = false;
-      const d = $("savedDate").value || today;
-      list = list.filter(r => (r.date||"") === d);
-    } else {
-      $("savedDate").disabled = true;
-    }
-
-    list = filterByMeta(list, $("savedClub").value, $("savedField").value);
-    list.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+    let list = getSavedFilteredList();
 
     $("countLine").textContent = `${rounds.length} total • ${list.length} shown`;
 
@@ -1066,14 +1055,14 @@
           <div>
             <div style="font-weight:950">${r.date || ""} <span class="meta2">${place ? "• "+escapeHtml(place) : ""}</span></div>
             <div class="meta2">
-              Score: <b>${r.hit}/25</b> • Hit ${pct(r.hit,25)}% • Miss ${pct(missCount,25)}% • Shot1: ${r.shot1||0} • Shot2: ${r.shot2||0}
+              Score: <b>${r.hit}/25</b> • 1st Shot: ${r.shot1||0} • 2nd Shot: ${r.shot2||0}
             </div>
           </div>
           <button class="btn danger" data-del="${r.id}">Delete</button>
         </div>
 
         <div style="padding:10px 12px;border-bottom:1px solid var(--border)">
-          <div class="small" style="margin-bottom:6px">Pattern (✓/× + zone)</div>
+          <div class="small" style="margin-bottom:6px">Pattern</div>
           <div style="display:flex;flex-wrap:wrap;gap:0">
             ${preview || "<span class='small'>No pattern saved.</span>"}
           </div>
@@ -1113,26 +1102,62 @@
     });
   }
  function getSavedFilteredList(){
-  let list = rounds.slice();
-
-  // Saved Range filter (today / specific day / all)
-  const mode = $("savedRange").value;
-  const today = todayISO();
-
-  if(mode === "today"){
-    list = list.filter(r => (r.date||"") === today);
-  } else if(mode === "day"){
-    const d = $("savedDate").value || today;
-    list = list.filter(r => (r.date||"") === d);
+    let list = rounds.slice();
+  
+    const mode = $("savedRange").value;
+    const today = todayISO();
+  
+    // enable/disable date picker
+    $("savedDate").disabled = (mode !== "day");
+  
+    // Build [start, end) date bounds (same logic as overview)
+    const now = new Date(); now.setHours(0,0,0,0);
+    let start = null, end = null;
+  
+    if(mode === "all"){
+      start = null; end = null;
+    } else if(mode === "today"){
+      start = new Date(now);
+      end = new Date(now); end.setDate(end.getDate()+1);
+    } else if(mode === "week"){
+      start = startOfWeek(now);
+      end = new Date(start); end.setDate(end.getDate()+7);
+    } else if(mode === "month"){
+      start = startOfMonth(now);
+      end = addMonths(start, 1);
+    } else if(mode === "last3"){
+      end = addMonths(startOfMonth(now), 1);
+      start = addMonths(end, -3);
+    } else if(mode === "last6"){
+      end = addMonths(startOfMonth(now), 1);
+      start = addMonths(end, -6);
+    } else if(mode === "year"){
+      start = startOfYear(now);
+      end = new Date(now.getFullYear()+1, 0, 1);
+      end.setHours(0,0,0,0);
+    } else if(mode === "day"){
+      const picked = $("savedDate").value || today;
+      start = parseISODate(picked);
+      end = parseISODate(picked);
+      if(end) end.setDate(end.getDate()+1);
+    }
+  
+    // Apply date range
+    list = list.filter(r=>{
+      const d = parseISODate(r.date);
+      if(!d) return false;
+      if(!start && !end) return true;
+      return (d >= start && d < end);
+    });
+  
+    // Club + Field filters
+    list = filterByMeta(list, $("savedClub").value, $("savedField").value);
+  
+    // Sort newest first
+    list.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+    return list;
   }
 
-  // Club + Field filters
-  list = filterByMeta(list, $("savedClub").value, $("savedField").value);
-
-  // Sort newest first
-  list.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
-  return list;
-}
 
 function exportSavedRoundsPDF(){
   const exportList = getSavedFilteredList();
