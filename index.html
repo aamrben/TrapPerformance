@@ -1080,16 +1080,24 @@
     const best = Math.max(...scores);
     const worst = Math.min(...scores);
 
-    const byRecent = list.slice().sort((a,b)=>{
+    // Last 10 rounds: IGNORE the selected period. Use ALL rounds.
+    const allByRecent = rounds.slice().sort((a,b)=>{
       const da = parseISODate(a.date); const db = parseISODate(b.date);
       const ta = da ? da.getTime() : 0;
       const tb = db ? db.getTime() : 0;
+    
+      // newest round date first
       if(tb !== ta) return tb - ta;
+    
+      // tie-breaker: newest saved first
       return (b.createdAt||0) - (a.createdAt||0);
     });
+    
+    const last10List = allByRecent.slice(0,10);
+    const last10Avg = last10List.length
+      ? (last10List.reduce((s,r)=>s+(r.hit||0),0) / last10List.length)
+      : null;
 
-    const last10List = byRecent.slice(0,10);
-    const last10Avg = last10List.length ? (last10List.reduce((s,r)=>s+(r.hit||0),0) / last10List.length) : null;
 
     // Miss totals per zone (from saved counts)
     const missTotals = {HL:0, SL:0, C:0, SR:0, HR:0};
