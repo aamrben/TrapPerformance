@@ -1154,7 +1154,19 @@
     list = filterByMeta(list, $("savedClub").value, $("savedField").value);
   
     // Sort newest first
-    list.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+    list.sort((a,b)=>{
+      const da = parseISODate(a.date);
+      const db = parseISODate(b.date);
+    
+      const ta = da ? da.getTime() : 0;
+      const tb = db ? db.getTime() : 0;
+    
+      // newest round date first
+      if(tb !== ta) return tb - ta;
+    
+      // tie-breaker: newest saved first
+      return (b.createdAt||0) - (a.createdAt||0);
+    });
     return list;
   }
 
