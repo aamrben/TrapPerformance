@@ -7,58 +7,92 @@
   <style>
     :root{
       --bg:#0b0c10; --card:#12141a; --muted:#9aa3b2; --text:#eef2ff; --border:#232735;
-      --green:#22c55e; --red:#ef4444; --orange:#f97316; --yellow:#eab308;
       --shadow: 0 10px 30px rgba(0,0,0,.35);
+
+      /* 5-zone greens (hits) */
+      --g1:#22c55e;   /* center-ish main */
+      --g2:#16a34a;
+      --g3:#4ade80;
+      --g4:#10b981;
+      --g5:#86efac;
+
+      /* 5-zone reds (misses) */
+      --r1:#ef4444;
+      --r2:#dc2626;
+      --r3:#f87171;
+      --r4:#fb7185;
+      --r5:#fecaca;
+
+      --orange:#f97316;
+      --yellow:#eab308;
     }
+
     *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
-    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial;
-      background:linear-gradient(180deg,#090a0f,#0b0c10); color:var(--text)}
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial;
+      background:linear-gradient(180deg,#090a0f,#0b0c10);
+      color:var(--text);
+    }
+
     .wrap{max-width:1020px;margin:0 auto;padding:14px}
     h1{margin:6px 0 2px;font-size:20px}
     .sub{color:var(--muted);font-size:13px;margin:0 0 12px}
     .grid{display:grid;gap:12px}
     @media(min-width:960px){ .grid{grid-template-columns: 1.25fr .95fr} }
 
-    .card{background:rgba(18,20,26,.92);border:1px solid var(--border);border-radius:18px;padding:12px;box-shadow:var(--shadow)}
+    .card{
+      background:rgba(18,20,26,.92);
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:12px;
+      box-shadow:var(--shadow)
+    }
+
     .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
     label{font-size:12px;color:var(--muted);display:block;margin:0 0 6px}
+
     input, textarea, select{
-      width:100%; padding:10px 12px; border-radius:14px; border:1px solid var(--border);
-      background:#0f1118; color:var(--text); outline:none;
+      width:100%;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background:#0f1118;
+      color:var(--text);
+      outline:none;
     }
     textarea{min-height:74px; resize:vertical}
 
     .btn{
-      border:1px solid var(--border); background:#0f1118; color:var(--text);
-      padding:10px 12px; border-radius:16px; font-weight:800;
-      display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      border:1px solid var(--border);
+      background:#0f1118;
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:16px;
+      font-weight:800;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      cursor:pointer;
+      user-select:none;
     }
     .btn:active{transform:scale(.99)}
     .btn.primary{background:#1b2030;border-color:#2a3150}
     .btn.danger{background:#2a1212;border-color:#4b1f1f}
+    .btn:disabled{opacity:.5; cursor:not-allowed}
 
-    /* BIG tap buttons */
-    .tapGrid{display:grid;grid-template-columns:1fr 1fr; gap:10px}
-    .tap{
-      padding:18px 14px; border-radius:18px; border:1px solid var(--border);
-      font-size:18px; font-weight:950; letter-spacing:.2px;
-      box-shadow: 0 8px 20px rgba(0,0,0,.25);
-      min-height:64px;
-    }
-    .tap small{display:block; font-size:12px; font-weight:800; opacity:.85; margin-top:4px}
-    .tap.hit{background:rgba(34,197,94,.14); border-color:rgba(34,197,94,.35)}
-    .tap.left{background:rgba(239,68,68,.12); border-color:rgba(239,68,68,.28)}
-    .tap.center{background:rgba(249,115,22,.12); border-color:rgba(249,115,22,.30)}
-    .tap.right{background:rgba(234,179,8,.12); border-color:rgba(234,179,8,.30)}
+    .divider{height:1px;background:var(--border);margin:12px 0}
+    .small{font-size:12px;color:var(--muted)}
+    .hint{font-size:11px;color:var(--muted)}
+    .pill{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+    .dot{width:10px;height:10px;border-radius:999px}
 
     .statgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
     .stat{border:1px solid var(--border);border-radius:16px;padding:10px;background:#0f1118}
     .stat .k{font-size:11px;color:var(--muted)}
     .stat .v{font-size:18px;font-weight:950;margin-top:3px}
     .stat .s{font-size:11px;color:var(--muted);margin-top:3px}
-
-    .pill{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
-    .dot{width:10px;height:10px;border-radius:999px}
 
     /* 25-shot grid */
     .shotsWrap{margin-top:10px}
@@ -74,24 +108,112 @@
       background:#0f1118;
       text-align:center;
       font-weight:950;
-      min-height:48px;
+      min-height:52px;
       display:flex;
       flex-direction:column;
       justify-content:center;
       align-items:center;
+      line-height:1.05;
     }
-    .shot .meta{font-size:10px;font-weight:800;color:var(--muted);margin-top:3px}
-    .shot.hit{background:rgba(34,197,94,.10); border-color:rgba(34,197,94,.30); color:var(--green)}
-    .shot.l{background:rgba(239,68,68,.10); border-color:rgba(239,68,68,.26); color:var(--red)}
-    .shot.c{background:rgba(249,115,22,.10); border-color:rgba(249,115,22,.26); color:var(--orange)}
-    .shot.r{background:rgba(234,179,8,.12); border-color:rgba(234,179,8,.26); color:var(--yellow)}
+    .shot .meta{font-size:10px;font-weight:800;color:var(--muted);margin-top:4px}
+
     .shot.pending{opacity:.55}
 
-    .divider{height:1px;background:var(--border);margin:12px 0}
-    .small{font-size:12px;color:var(--muted)}
+    /* Outcome styling (filled lightly) */
+    .shot.hit{border-color:rgba(34,197,94,.30)}
+    .shot.miss{border-color:rgba(239,68,68,.26)}
+
+    /* 5-zone tap stacks */
+    .zonePanel{display:grid;gap:10px}
+    .zoneHeader{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-end;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .seg{
+      display:inline-flex;
+      border:1px solid var(--border);
+      background:#0f1118;
+      border-radius:999px;
+      overflow:hidden;
+    }
+    .seg button{
+      border:0;
+      background:transparent;
+      color:var(--muted);
+      padding:8px 12px;
+      font-weight:950;
+      cursor:pointer;
+      min-width:74px;
+    }
+    .seg button.active{
+      background:#1b2030;
+      color:var(--text);
+    }
+
+    .zoneGrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+    .zoneBtn{
+      padding:14px 10px;
+      border-radius:16px;
+      border:1px solid var(--border);
+      font-weight:950;
+      font-size:13px;
+      min-height:62px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:4px;
+      cursor:pointer;
+      user-select:none;
+      box-shadow: 0 8px 20px rgba(0,0,0,.22);
+    }
+    .zoneBtn small{font-size:11px;font-weight:900;opacity:.85}
+
+    /* Hit shades per zone */
+    .hitHL{background:rgba(16,185,129,.12); border-color:rgba(16,185,129,.30); color:var(--g4)}
+    .hitSL{background:rgba(74,222,128,.12); border-color:rgba(74,222,128,.30); color:var(--g3)}
+    .hitC {background:rgba(34,197,94,.12);  border-color:rgba(34,197,94,.30);  color:var(--g1)}
+    .hitSR{background:rgba(134,239,172,.10);border-color:rgba(134,239,172,.26); color:var(--g5)}
+    .hitHR{background:rgba(22,163,74,.12);  border-color:rgba(22,163,74,.30);  color:var(--g2)}
+
+    /* Miss shades per zone */
+    .missHL{background:rgba(220,38,38,.12); border-color:rgba(220,38,38,.28); color:var(--r2)}
+    .missSL{background:rgba(248,113,113,.10);border-color:rgba(248,113,113,.25); color:var(--r3)}
+    .missC {background:rgba(239,68,68,.10); border-color:rgba(239,68,68,.25); color:var(--r1)}
+    .missSR{background:rgba(251,113,133,.10);border-color:rgba(251,113,133,.25); color:var(--r4)}
+    .missHR{background:rgba(254,202,202,.08);border-color:rgba(254,202,202,.22); color:var(--r1)}
+
+    /* Badges */
+    .badge{
+      display:inline-flex;align-items:center;gap:8px;
+      border:1px solid var(--border); border-radius:999px; padding:6px 10px;
+      background:#0f1118; font-size:12px; font-weight:900;
+    }
+    .badge strong{font-weight:950}
+    .badge.zHL{border-color:rgba(239,68,68,.35)}
+    .badge.zSL{border-color:rgba(248,113,113,.35)}
+    .badge.zC {border-color:rgba(249,115,22,.35)}
+    .badge.zSR{border-color:rgba(234,179,8,.35)}
+    .badge.zHR{border-color:rgba(34,197,94,.35)}
+
+    /* Best/Worst pills */
+    .pillScore{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:6px 10px;border-radius:999px;border:1px solid var(--border);
+      background:#0f1118;font-size:12px;font-weight:950;
+      margin-right:6px;
+      white-space:nowrap;
+    }
+    .pillScore.good{border-color:rgba(34,197,94,.35); color:var(--g1)}
+    .pillScore.mid{border-color:rgba(249,115,22,.35); color:var(--orange)}
+    .pillScore.low{border-color:rgba(239,68,68,.35); color:var(--r1)}
+
+    /* Saved rounds list */
     .list{display:grid;grid-template-columns:1fr;gap:10px}
     @media(min-width:560px){ .list{grid-template-columns:1fr 1fr} }
-
     .round{border:1px solid var(--border);border-radius:18px;overflow:hidden;background:#0f1118}
     .roundHead{padding:12px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;gap:10px}
     .meta2{font-size:12px;color:var(--muted)}
@@ -102,81 +224,15 @@
     .g{background:rgba(34,197,94,.08)} .rr{background:rgba(239,68,68,.08)}
     .oo{background:rgba(249,115,22,.08)} .yy{background:rgba(234,179,8,.08)}
     .notes{padding:12px;color:#d7def0;font-size:13px;white-space:pre-wrap}
-
-    .filters{display:grid;gap:10px}
-    @media(min-width:720px){ .filters{grid-template-columns: 1.2fr 1fr 1fr 1fr} }
-    .hint{font-size:11px;color:var(--muted)}
-    .badge{
-      display:inline-flex;align-items:center;gap:8px;
-      border:1px solid var(--border); border-radius:999px; padding:6px 10px;
-      background:#0f1118; font-size:12px; font-weight:900;
-    }
-    .badge strong{font-weight:950}
-    .badge.left{border-color:rgba(239,68,68,.35)}
-    .badge.center{border-color:rgba(249,115,22,.35)}
-    .badge.right{border-color:rgba(234,179,8,.35)}
-
-    /* Best/Worst pills */
-    .pillScore{
-      display:inline-flex;align-items:center;gap:6px;
-      padding:6px 10px;border-radius:999px;border:1px solid var(--border);
-      background:#0f1118;font-size:12px;font-weight:950;
-      margin-right:6px;
-      white-space:nowrap;
-    }
-    .pillScore.good{border-color:rgba(34,197,94,.35); color:var(--green)}
-    .pillScore.mid{border-color:rgba(249,115,22,.35); color:var(--orange)}
-    .pillScore.low{border-color:rgba(239,68,68,.35); color:var(--red)}
-    /* Segmented shot toggle */
-    .seg{
-      display:flex; gap:8px; padding:6px;
-      border:1px solid var(--border); border-radius:16px; background:#0f1118;
-    }
-    .segBtn{
-      flex:1; padding:10px 12px; border-radius:14px;
-      border:1px solid transparent; background:transparent; color:var(--text);
-      font-weight:950;
-    }
-    .segBtn.active{
-      background:#1b2030; border-color:#2a3150;
-    }
-    
-    /* Zone diagrams (5 lines) */
-    .zoneCard{
-      border:1px solid var(--border); border-radius:18px; padding:12px; background:#0f1118;
-    }
-    .zoneTitle{font-weight:950; font-size:13px; margin-bottom:8px; color:var(--muted)}
-    .zoneGrid{
-      display:grid;
-      grid-template-columns:repeat(5, minmax(0,1fr));
-      gap:8px;
-    }
-    .zoneBtn{
-      padding:14px 10px;
-      border-radius:16px;
-      border:1px solid var(--border);
-      background:#0b0c10;
-      font-weight:950;
-      text-align:center;
-      user-select:none;
-    }
-    .zoneBtn small{display:block; font-size:10px; font-weight:900; color:var(--muted); margin-top:4px}
-    .zoneHit .zoneBtn{border-color:rgba(34,197,94,.25)}
-    .zoneHit .zoneBtn:active{transform:scale(.99); background:rgba(34,197,94,.10)}
-    .zoneMiss .zoneBtn{border-color:rgba(239,68,68,.22)}
-    .zoneMiss .zoneBtn:active{transform:scale(.99); background:rgba(239,68,68,.10)}
-    
-    /* live grid cell extra tiny info */
-    .shot .meta2{
-      font-size:10px; font-weight:900; color:var(--muted); margin-top:2px;
-    }
-
   </style>
 </head>
+
 <body>
   <div class="wrap">
     <h1>Trap Tracker — Aamr Benbrahim</h1>
-    <p class="sub">One tap per target. 25 shots = 5 stations × 5 targets. Colors: Hit=green, Left=red, Center=orange, Right=yellow.</p>
+    <p class="sub">
+      One tap per target (25). Log <b>zone</b> + <b>hit/miss</b> + <b>shot used</b> (1st/2nd). Zones: HL (60°), SL (30°), C (0°), SR (30°), HR (60°).
+    </p>
 
     <div class="grid">
       <!-- LIVE ROUND -->
@@ -196,46 +252,55 @@
 
         <div class="statgrid">
           <div class="stat"><div class="k">Station</div><div class="v" id="stationV">1/5</div></div>
-          <div class="stat"><div class="k">Shot</div><div class="v" id="shotV">0/25</div></div>
+          <div class="stat"><div class="k">Target</div><div class="v" id="shotV">0/25</div></div>
           <div class="stat"><div class="k">Score</div><div class="v" id="scoreV">0/25</div></div>
           <div class="stat"><div class="k">Hit %</div><div class="v" id="hitPctV">0%</div></div>
         </div>
 
         <div class="divider"></div>
 
-       <div class="row" style="justify-content:space-between; align-items:flex-end; gap:10px">
-        <div style="flex:1; min-width:200px">
-          <label>Shot number</label>
-          <div class="seg" role="group" aria-label="Shot number">
-            <button class="segBtn active" id="shot1Btn" type="button">1st shot</button>
-            <button class="segBtn" id="shot2Btn" type="button">2nd shot</button>
-          </div>
-          <div class="hint">Pick shot number, then tap a line in HIT or MISS diagram.</div>
-        </div>
-      </div>
-      
-      <div class="zoneWrap" style="margin-top:10px">
-        <div class="zoneCard zoneHit">
-          <div class="zoneTitle">✅ HIT (green) — tap a direction</div>
-          <div class="zoneGrid" id="hitZoneGrid"></div>
-        </div>
-      
-        <div class="zoneCard zoneMiss" style="margin-top:10px">
-          <div class="zoneTitle">❌ MISS (red) — tap a direction</div>
-          <div class="zoneGrid" id="missZoneGrid"></div>
-        </div>
-      </div>
+        <div class="zonePanel">
+          <div class="zoneHeader">
+            <div class="small">
+              Select shot used, then tap a zone. Top = Hit (green), bottom = Miss (red).
+            </div>
 
+            <div class="row" style="gap:8px">
+              <div class="small" style="font-weight:900">Shot used</div>
+              <div class="seg" role="tablist" aria-label="Shot used">
+                <button id="shot1Btn" class="active" type="button">1st</button>
+                <button id="shot2Btn" type="button">2nd</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- HITS -->
+          <div class="zoneGrid" id="hitGrid">
+            <button class="zoneBtn hitHL" data-out="H" data-zone="HL" type="button">HL<small>60°</small></button>
+            <button class="zoneBtn hitSL" data-out="H" data-zone="SL" type="button">SL<small>30°</small></button>
+            <button class="zoneBtn hitC"  data-out="H" data-zone="C"  type="button">C<small>0°</small></button>
+            <button class="zoneBtn hitSR" data-out="H" data-zone="SR" type="button">SR<small>30°</small></button>
+            <button class="zoneBtn hitHR" data-out="H" data-zone="HR" type="button">HR<small>60°</small></button>
+          </div>
+
+          <!-- MISSES -->
+          <div class="zoneGrid" id="missGrid">
+            <button class="zoneBtn missHL" data-out="M" data-zone="HL" type="button">HL<small>MISS</small></button>
+            <button class="zoneBtn missSL" data-out="M" data-zone="SL" type="button">SL<small>MISS</small></button>
+            <button class="zoneBtn missC"  data-out="M" data-zone="C"  type="button">C<small>MISS</small></button>
+            <button class="zoneBtn missSR" data-out="M" data-zone="SR" type="button">SR<small>MISS</small></button>
+            <button class="zoneBtn missHR" data-out="M" data-zone="HR" type="button">HR<small>MISS</small></button>
+          </div>
+        </div>
 
         <div class="shotsWrap">
           <div class="row" style="justify-content:space-between; margin-top:12px">
             <div class="row" style="gap:10px">
-              <div class="pill"><span class="dot" style="background:var(--green)"></span>Hit</div>
-              <div class="pill"><span class="dot" style="background:var(--red)"></span>Left</div>
-              <div class="pill"><span class="dot" style="background:var(--orange)"></span>Center</div>
-              <div class="pill"><span class="dot" style="background:var(--yellow)"></span>Right</div>
+              <div class="pill"><span class="dot" style="background:var(--g1)"></span>Hit</div>
+              <div class="pill"><span class="dot" style="background:var(--r1)"></span>Miss</div>
+              <div class="pill"><span class="dot" style="background:var(--muted)"></span>Zone: HL/SL/C/SR/HR</div>
             </div>
-            <div class="small">Tap buttons above, grid fills automatically.</div>
+            <div class="small">Grid fills automatically.</div>
           </div>
 
           <div class="shotGrid" id="shotGrid" style="margin-top:10px"></div>
@@ -278,7 +343,7 @@
 
         <div class="divider"></div>
 
-        <div class="filters">
+        <div class="filters" style="display:grid;gap:10px">
           <div>
             <label>Time range</label>
             <select id="rangeSel">
@@ -340,7 +405,7 @@
           <div class="stat">
             <div class="k">Best / Worst</div>
             <div class="v" id="bestWorst">—</div>
-            <div class="s" id="bestWorstSub">Colors: ≥20 green • 18–19 orange • <18 red</div>
+            <div class="s" id="bestWorstSub">Colors: ≥20 green • 18–19 orange • &lt;18 red</div>
           </div>
 
           <div class="stat">
@@ -350,34 +415,52 @@
           </div>
         </div>
 
-        <!-- Miss diagram -->
+        <!-- Miss diagram 5-zone -->
         <div class="divider"></div>
 
         <div class="stat" style="background:#0f1118">
-          <div class="k">Average misses per round</div>
+          <div class="k">Average misses per round (by zone)</div>
 
-          <div class="row" style="justify-content:space-between; align-items:flex-start; gap:12px; margin-top:6px">
+          <div class="row" style="justify-content:space-between; align-items:flex-start; gap:10px; margin-top:8px">
             <div style="flex:1;text-align:center">
-              <div style="font-weight:950;color:var(--red);font-size:18px" id="avgML">0.0</div>
-              <div class="small">LEFT</div>
+              <div style="font-weight:950;color:var(--r1);font-size:18px" id="avgMHL">0.0</div>
+              <div class="small">HL</div>
             </div>
-
+            <div style="flex:1;text-align:center">
+              <div style="font-weight:950;color:var(--r3);font-size:18px" id="avgMSL">0.0</div>
+              <div class="small">SL</div>
+            </div>
             <div style="flex:1;text-align:center">
               <div style="font-weight:950;color:var(--orange);font-size:18px" id="avgMC">0.0</div>
-              <div class="small">CENTER</div>
+              <div class="small">C</div>
             </div>
-
             <div style="flex:1;text-align:center">
-              <div style="font-weight:950;color:var(--yellow);font-size:18px" id="avgMR">0.0</div>
-              <div class="small">RIGHT</div>
+              <div style="font-weight:950;color:var(--yellow);font-size:18px" id="avgMSR">0.0</div>
+              <div class="small">SR</div>
+            </div>
+            <div style="flex:1;text-align:center">
+              <div style="font-weight:950;color:var(--g1);font-size:18px" id="avgMHR">0.0</div>
+              <div class="small">HR</div>
             </div>
           </div>
 
-          <svg viewBox="0 0 320 90" width="100%" height="90" style="margin-top:8px">
-            <path d="M160 80 C120 60, 90 40, 60 18" fill="none" stroke="var(--red)" stroke-width="6" stroke-linecap="round"/>
-            <path d="M160 80 C160 58, 160 40, 160 16" fill="none" stroke="var(--orange)" stroke-width="6" stroke-linecap="round"/>
-            <path d="M160 80 C200 60, 230 40, 260 18" fill="none" stroke="var(--yellow)" stroke-width="6" stroke-linecap="round"/>
-            <circle cx="160" cy="80" r="7" fill="#0f1118" stroke="var(--border)" stroke-width="2"/>
+          <svg viewBox="0 0 360 100" width="100%" height="100" style="margin-top:8px">
+            <!-- base point -->
+            <circle cx="180" cy="86" r="7" fill="#0f1118" stroke="var(--border)" stroke-width="2"/>
+
+            <!-- 5 rays (stylized curves) -->
+            <path d="M180 86 C130 70, 90 50, 50 18" fill="none" stroke="var(--r1)" stroke-width="6" stroke-linecap="round"/>
+            <path d="M180 86 C150 66, 125 46, 100 18" fill="none" stroke="var(--r3)" stroke-width="6" stroke-linecap="round"/>
+            <path d="M180 86 C180 60, 180 40, 180 14" fill="none" stroke="var(--orange)" stroke-width="6" stroke-linecap="round"/>
+            <path d="M180 86 C210 66, 235 46, 260 18" fill="none" stroke="var(--yellow)" stroke-width="6" stroke-linecap="round"/>
+            <path d="M180 86 C230 70, 270 50, 310 18" fill="none" stroke="var(--g1)" stroke-width="6" stroke-linecap="round"/>
+
+            <!-- labels -->
+            <text x="52" y="16" fill="var(--muted)" font-size="11" font-weight="900">HL</text>
+            <text x="100" y="16" fill="var(--muted)" font-size="11" font-weight="900">SL</text>
+            <text x="176" y="12" fill="var(--muted)" font-size="11" font-weight="900">C</text>
+            <text x="258" y="16" fill="var(--muted)" font-size="11" font-weight="900">SR</text>
+            <text x="310" y="16" fill="var(--muted)" font-size="11" font-weight="900">HR</text>
           </svg>
 
           <div class="s" id="missDiagramSub">Based on selected period</div>
@@ -386,7 +469,7 @@
         <div class="divider"></div>
 
         <div class="small">
-          Goal: reduce your <b>most missed direction</b> first — it usually gives the fastest improvement.
+          Goal: reduce your <b>most missed zone</b> first — it usually gives the fastest improvement.
         </div>
       </div>
     </div>
@@ -402,7 +485,7 @@
 
       <div class="divider"></div>
 
-      <div class="filters" style="grid-template-columns: 1fr 1fr 1fr 1fr;">
+      <div class="filters" style="display:grid;gap:10px;grid-template-columns: 1fr 1fr 1fr 1fr;">
         <div>
           <label>Show</label>
           <select id="savedRange">
@@ -439,12 +522,12 @@
     </div>
 
     <p class="small" style="margin:14px 2px 28px">
-      Next upgrades: station-by-station stats (S1..S5 patterns) + vibration feedback per shot.
+      Next upgrades: station-by-station stats (S1..S5 patterns) + per-zone trends (HL/SL/C/SR/HR) + export CSV.
     </p>
   </div>
 
 <script>
-  const KEY = "trap_tracker_live_issf_v3_aamr";
+  const KEY = "trap_tracker_live_issf_v4_zones_aamr";
   const $ = (id) => document.getElementById(id);
 
   const pct = (a,b)=> b? Math.round((a/b)*1000)/10 : 0;
@@ -514,211 +597,155 @@
   }
   function save(list){ localStorage.setItem(KEY, JSON.stringify(list)); }
 
-  // LIVE ROUND STATE (25 targets): each item = { outcome:'H'|'M', zone:'HL'|'SL'|'C'|'SR'|'HR', shot:1|2 }
-  let liveShots = [];
+  // LIVE ROUND STATE (25 targets): each entry is {out:'H'|'M', zone:'HL'|'SL'|'C'|'SR'|'HR', shot:1|2}
+  let liveTargets = [];
   let rounds = load();
-  
-  // current shot toggle (1 or 2)
-  let currentShot = 1;
-  
-  // zones list (fixed order)
-  const ZONES = [
-    { code:"HL", label:"Hard L", deg:"60°" },
-    { code:"SL", label:"Soft L", deg:"30°" },
-    { code:"C",  label:"Center", deg:"0°"  },
-    { code:"SR", label:"Soft R", deg:"30°" },
-    { code:"HR", label:"Hard R", deg:"60°" },
-  ];
 
+  const ZONES = ["HL","SL","C","SR","HR"];
 
-  function countsFromShots(shots){
-      let hit=0;
-      // misses by 5 zones
-      let mHL=0, mSL=0, mC=0, mSR=0, mHR=0;
-    
-      // shot split
-      let s1=0, s2=0;           // attempts logged as shot 1 / shot 2
-      let h1=0, h2=0;           // hits on shot 1 / shot 2
-      let m1=0, m2=0;           // misses on shot 1 / shot 2
-    
-      for(const t of shots){
-        if(!t) continue;
-        const outcome = t.outcome; // 'H' or 'M'
-        const zone = t.zone;       // HL/SL/C/SR/HR
-        const sh = t.shot === 2 ? 2 : 1;
-    
-        if(sh === 1) s1++; else s2++;
-    
-        if(outcome === "H"){
-          hit++;
-          if(sh === 1) h1++; else h2++;
-        } else {
-          if(sh === 1) m1++; else m2++;
-    
-          if(zone === "HL") mHL++;
-          else if(zone === "SL") mSL++;
-          else if(zone === "C")  mC++;
-          else if(zone === "SR") mSR++;
-          else if(zone === "HR") mHR++;
-        }
+  function blankZoneObj(){
+    return {HL:0, SL:0, C:0, SR:0, HR:0};
+  }
+
+  function countsFromTargets(targets){
+    const hitZone = blankZoneObj();
+    const missZone = blankZoneObj();
+    let hit=0, miss=0, shot1=0, shot2=0;
+
+    for(const t of targets){
+      if(!t) continue;
+      if(t.shot === 1) shot1++;
+      if(t.shot === 2) shot2++;
+
+      if(t.out === "H"){
+        hit++;
+        if(hitZone[t.zone] !== undefined) hitZone[t.zone]++;
+      } else if(t.out === "M"){
+        miss++;
+        if(missZone[t.zone] !== undefined) missZone[t.zone]++;
       }
-    
-      // keep old keys for compatibility with your UI (ml/mc/mr), but map them sensibly:
-      // ml = all LEFT misses (HL+SL), mc = center misses, mr = all RIGHT misses (SR+HR)
-      const ml = mHL + mSL;
-      const mc = mC;
-      const mr = mSR + mHR;
-    
-      return {
-        shots: 25,
-        hit,
-        // legacy buckets
-        ml, mc, mr,
-        // detailed buckets
-        mHL, mSL, mC, mSR, mHR,
-        // shot split
-        s1, s2, h1, h2, m1, m2
-      };
     }
+    return {targets:25, hit, miss, shot1, shot2, hitZone, missZone};
+  }
 
-  function stationIndexFromShotIndex(i){
+  function stationIndexFromTargetIndex(i){
     return Math.min(4, Math.floor(i/5));
   }
 
+  // Shot used toggle state
+  let shotUsed = 1;
+
+  function setShotUsed(n){
+    shotUsed = n;
+    $("shot1Btn").classList.toggle("active", n===1);
+    $("shot2Btn").classList.toggle("active", n===2);
+  }
+  $("shot1Btn").addEventListener("click", ()=>setShotUsed(1));
+  $("shot2Btn").addEventListener("click", ()=>setShotUsed(2));
+
+  function zoneClass(out, zone){
+    if(out === "H"){
+      return zone==="HL" ? "hitHL" :
+             zone==="SL" ? "hitSL" :
+             zone==="C"  ? "hitC"  :
+             zone==="SR" ? "hitSR" : "hitHR";
+    } else {
+      return zone==="HL" ? "missHL" :
+             zone==="SL" ? "missSL" :
+             zone==="C"  ? "missC"  :
+             zone==="SR" ? "missSR" : "missHR";
+    }
+  }
+
   function renderLive(){
-    const idx = liveShots.length;
-    const station = stationIndexFromShotIndex(Math.max(0, idx)) + 1;
-    const {hit} = countsFromShots(liveShots);
+    const idx = liveTargets.length;
+    const station = stationIndexFromTargetIndex(Math.max(0, idx)) + 1;
+    const {hit} = countsFromTargets(liveTargets);
 
     $("stationV").textContent = `${Math.min(5, station)}/5`;
     $("shotV").textContent = `${idx}/25`;
     $("scoreV").textContent = `${hit}/25`;
     $("hitPctV").textContent = `${pct(hit, Math.max(1, idx))}%`;
 
-    if(idx === 0) $("statusLine").textContent = "Ready. Tap one button per target.";
-    else if(idx < 25) $("statusLine").textContent = `Live… Station ${Math.min(5, station)} • Shot ${idx+1}/25`;
+    if(idx === 0) $("statusLine").textContent = "Ready. Select shot used (1st/2nd), then tap zone (Hit or Miss).";
+    else if(idx < 25) $("statusLine").textContent = `Live… Station ${Math.min(5, station)} • Target ${idx+1}/25 • Shot used: ${shotUsed}`;
     else $("statusLine").textContent = "Round complete. Save it or reset.";
 
     const done = idx >= 25;
-    // disable zone buttons when round is done
-    document.querySelectorAll(".zoneBtn").forEach(b=> b.disabled = done);
-    $("shot1Btn").disabled = done;
-    $("shot2Btn").disabled = done;
+    document.querySelectorAll(".zoneBtn").forEach(b => b.disabled = done);
     $("undoBtn").disabled = (idx === 0);
 
     const grid = $("shotGrid");
     grid.innerHTML = "";
     for(let i=0;i<25;i++){
-      const t = liveShots[i]; // {outcome, zone, shot}
+      const t = liveTargets[i];
       const st = Math.floor(i/5) + 1;
       const inSt = (i % 5) + 1;
-    
+
       const el = document.createElement("div");
-    
-      // decide class
       if(!t){
         el.className = "shot pending";
-        el.innerHTML = `<div>—</div><div class="meta2"></div><div class="meta">S${st} • #${inSt}</div>`;
-        grid.appendChild(el);
-        continue;
+        el.innerHTML = `<div>—</div><div class="meta">S${st} • #${inSt}</div>`;
+      } else {
+        const labelTop = t.out === "H" ? "HIT" : "MISS";
+        const labelMid = `${t.zone}`;
+        const labelBot = `Shot ${t.shot}`;
+        el.className = `shot ${t.out==="H" ? "hit" : "miss"}`;
+        el.style.background = t.out==="H" ? "rgba(34,197,94,.08)" : "rgba(239,68,68,.08)";
+        el.style.color = t.out==="H" ? "var(--g1)" : "var(--r1)";
+        el.style.borderColor = t.out==="H" ? "rgba(34,197,94,.24)" : "rgba(239,68,68,.22)";
+        el.innerHTML = `<div style="font-size:12px">${labelTop}</div><div style="font-size:16px">${labelMid}</div><div class="meta">S${st} • #${inSt} • ${labelBot}</div>`;
       }
-    
-      const outcome = t.outcome; // "H" or "M"
-      const zone = t.zone || "";
-      const sh = t.shot === 2 ? "²" : "¹";
-    
-      el.className = "shot " + (
-        outcome === "H" ? "hit" :
-        (zone==="HL"||zone==="SL") ? "l" :
-        (zone==="C") ? "c" :
-        "r"
-      );
-    
-      const label = outcome === "H" ? "HIT" : "MISS";
-    
-      el.innerHTML = `
-        <div>${label} ${sh}</div>
-        <div class="meta2">${zone}</div>
-        <div class="meta">S${st} • #${inSt}</div>
-      `;
       grid.appendChild(el);
     }
-
   }
 
-  function pushTarget(outcome, zone){
-    if(liveShots.length >= 25) return;
-    liveShots.push({ outcome, zone, shot: currentShot });
+  function pushTarget(out, zone){
+    if(liveTargets.length >= 25) return;
+    liveTargets.push({ out, zone, shot: shotUsed });
     renderLive();
   }
-  
-  function renderZoneButtons(){
-    const hitWrap = $("hitZoneGrid");
-    const missWrap = $("missZoneGrid");
-    hitWrap.innerHTML = "";
-    missWrap.innerHTML = "";
-  
-    for(const z of ZONES){
-      // HIT button
-      const bH = document.createElement("button");
-      bH.type = "button";
-      bH.className = "zoneBtn";
-      bH.innerHTML = `${z.label}<small>${z.deg}</small>`;
-      bH.addEventListener("click", ()=>pushTarget("H", z.code));
-      hitWrap.appendChild(bH);
-  
-      // MISS button
-      const bM = document.createElement("button");
-      bM.type = "button";
-      bM.className = "zoneBtn";
-      bM.innerHTML = `${z.label}<small>${z.deg}</small>`;
-      bM.addEventListener("click", ()=>pushTarget("M", z.code));
-      missWrap.appendChild(bM);
-    }
-  }
-  
-  // shot toggle
-  $("shot1Btn").addEventListener("click", ()=>{
-    currentShot = 1;
-    $("shot1Btn").classList.add("active");
-    $("shot2Btn").classList.remove("active");
-  });
-  $("shot2Btn").addEventListener("click", ()=>{
-    currentShot = 2;
-    $("shot2Btn").classList.add("active");
-    $("shot1Btn").classList.remove("active");
-  });
 
+  // Wire zone buttons
+  document.querySelectorAll(".zoneBtn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const out = btn.getAttribute("data-out");
+      const zone = btn.getAttribute("data-zone");
+      pushTarget(out, zone);
+    });
+  });
 
   $("undoBtn").addEventListener("click", ()=>{
-    liveShots.pop();
+    liveTargets.pop();
     renderLive();
   });
 
   $("resetRoundBtn").addEventListener("click", ()=>{
-    liveShots = [];
+    liveTargets = [];
     renderLive();
   });
 
   $("saveRoundBtn").addEventListener("click", ()=>{
-    if(liveShots.length !== 25){
-      $("statusLine").textContent = `You are at ${liveShots.length}/25. Finish the round to save.`;
+    if(liveTargets.length !== 25){
+      $("statusLine").textContent = `You are at ${liveTargets.length}/25. Finish the round to save.`;
       return;
     }
-    const c = countsFromShots(liveShots);
+    const c = countsFromTargets(liveTargets);
+
     rounds.unshift({
       id: uid(),
       date: $("date").value || todayISO(),
       club: $("club").value.trim(),
       field: $("field").value.trim(),
       notes: $("notes").value,
-      liveShots: liveShots.slice(),
+      liveTargets: liveTargets.slice(),
       ...c,
       createdAt: Date.now()
     });
+
     save(rounds);
 
-    liveShots = [];
+    liveTargets = [];
     $("notes").value = "";
     renderAll();
   });
@@ -731,7 +758,6 @@
     const clubs = unique(rounds.map(r => (r.club||"").trim())).sort((a,b)=>a.localeCompare(b));
     const fields = unique(rounds.map(r => (r.field||"").trim())).sort((a,b)=>a.localeCompare(b));
 
-    // Overview selectors
     const clubSel = $("clubSel");
     const fieldSel = $("fieldSel");
     const keepClub = clubSel.value || "all";
@@ -743,7 +769,6 @@
     clubSel.value = clubs.includes(keepClub) ? keepClub : "all";
     fieldSel.value = fields.includes(keepField) ? keepField : "all";
 
-    // Saved rounds selectors
     const savedClub = $("savedClub");
     const savedField = $("savedField");
     const keepSC = savedClub.value || "all";
@@ -755,12 +780,11 @@
     savedClub.value = clubs.includes(keepSC) ? keepSC : "all";
     savedField.value = fields.includes(keepSF) ? keepSF : "all";
 
-    // Month dropdown
     const monthSel = $("monthSel");
     const monthKeys = unique(rounds.map(r => {
       const d = parseISODate(r.date);
       return d ? monthKey(d) : "";
-    })).sort((a,b)=> (a>b ? -1 : 1)); // newest first
+    })).sort((a,b)=> (a>b ? -1 : 1));
 
     const keepMonth = monthSel.value || "";
     monthSel.innerHTML = `<option value="">Select month…</option>` + monthKeys.map(k=>`<option value="${k}">${monthLabel(k)}</option>`).join("");
@@ -824,6 +848,22 @@
     return "low";
   }
 
+  function zoneReadable(z){
+    return z==="HL" ? "Hard Left" :
+           z==="SL" ? "Soft Left" :
+           z==="C"  ? "Center" :
+           z==="SR" ? "Soft Right" : "Hard Right";
+  }
+
+  function insightTextForZone(z){
+    if(z==="C")  return "Timing + trigger discipline on straight birds";
+    if(z==="SL") return "Clean start line, smooth acceleration (soft-left)";
+    if(z==="HL") return "Earlier pick-up + commit through hard-left";
+    if(z==="SR") return "Keep the gun moving (soft-right), no checking";
+    if(z==="HR") return "Don’t stop the barrel on hard-right — drive through";
+    return "Work your weakest zone first";
+  }
+
   function renderOverview(){
     const isMonthPick = $("rangeSel").value === "monthPick";
     $("monthSel").disabled = !isMonthPick;
@@ -834,15 +874,18 @@
 
     $("rangeCount").textContent = `${list.length} rounds`;
 
+    // Reset if empty
     if(list.length === 0){
       $("avgHits").textContent = "0.0/25";
       $("avgHitsSub").textContent = "Avg hit %: 0%";
       $("bestWorst").textContent = "—";
       $("last10").textContent = "—";
       $("last10Sub").textContent = "Avg hits (if ≥10)";
-      $("avgML").textContent = "0.0";
-      $("avgMC").textContent = "0.0";
-      $("avgMR").textContent = "0.0";
+      $("avgMHL").textContent = "0.0";
+      $("avgMSL").textContent = "0.0";
+      $("avgMC").textContent  = "0.0";
+      $("avgMSR").textContent = "0.0";
+      $("avgMHR").textContent = "0.0";
       $("missDiagramSub").textContent = "Based on selected period";
       $("mostMissedBadge").style.display = "none";
       $("insightBadge").style.display = "none";
@@ -850,18 +893,6 @@
     }
 
     const totalHit = list.reduce((s,r)=>s+(r.hit||0),0);
-    // prefer detailed fields if present, fall back to legacy
-    const totalHL = list.reduce((s,r)=>s+(r.mHL||0),0);
-    const totalSL = list.reduce((s,r)=>s+(r.mSL||0),0);
-    const totalC  = list.reduce((s,r)=>s+(r.mC||0),0);
-    const totalSR = list.reduce((s,r)=>s+(r.mSR||0),0);
-    const totalHR = list.reduce((s,r)=>s+(r.mHR||0),0);
-    
-    // legacy buckets (for your current miss diagram)
-    const totalL = totalHL + totalSL;
-    const totalR = totalSR + totalHR;
-
-
     const avgHits = totalHit / list.length;
     const avgPct = pct(totalHit, list.length*25);
 
@@ -873,15 +904,16 @@
     const last10List = byRecent.slice(0,10);
     const last10Avg = last10List.length ? (last10List.reduce((s,r)=>s+(r.hit||0),0) / last10List.length) : null;
 
-    const misses5 = [
-      {k:"Hard Left", v: totalHL, cls:"left", dot:"var(--red)"},
-      {k:"Soft Left", v: totalSL, cls:"left", dot:"var(--red)"},
-      {k:"Center",    v: totalC,  cls:"center", dot:"var(--orange)"},
-      {k:"Soft Right",v: totalSR, cls:"right", dot:"var(--yellow)"},
-      {k:"Hard Right",v: totalHR, cls:"right", dot:"var(--yellow)"},
-    ].sort((a,b)=>b.v-a.v);
-    
-    const topMiss = misses5[0];
+    // Miss totals per zone (from saved counts)
+    const missTotals = {HL:0, SL:0, C:0, SR:0, HR:0};
+    for(const r of list){
+      const mz = r.missZone || {};
+      for(const z of ZONES) missTotals[z] += (mz[z] || 0);
+    }
+
+    // Determine most missed zone
+    const missSorted = ZONES.map(z=>({z, v: missTotals[z]})).sort((a,b)=>b.v-a.v);
+    const topMiss = missSorted[0];
 
     $("avgHits").textContent = `${avgHits.toFixed(1)}/25`;
     $("avgHitsSub").textContent = `Avg hit %: ${avgPct}%`;
@@ -900,28 +932,33 @@
       $("last10Sub").textContent = `Need 10 rounds (you have ${last10List.length})`;
     }
 
-    const avgML = totalL / list.length;
-    const avgMC = totalC / list.length;
-    const avgMR = totalR / list.length;
+    // Avg misses per round by zone (5)
+    const avgM = {
+      HL: missTotals.HL / list.length,
+      SL: missTotals.SL / list.length,
+      C:  missTotals.C  / list.length,
+      SR: missTotals.SR / list.length,
+      HR: missTotals.HR / list.length
+    };
 
-    $("avgML").textContent = avgML.toFixed(1);
-    $("avgMC").textContent = avgMC.toFixed(1);
-    $("avgMR").textContent = avgMR.toFixed(1);
+    $("avgMHL").textContent = avgM.HL.toFixed(1);
+    $("avgMSL").textContent = avgM.SL.toFixed(1);
+    $("avgMC").textContent  = avgM.C.toFixed(1);
+    $("avgMSR").textContent = avgM.SR.toFixed(1);
+    $("avgMHR").textContent = avgM.HR.toFixed(1);
+
     $("missDiagramSub").textContent = `Avg misses per round (selected period)`;
 
+    // Badges
     const badge = $("mostMissedBadge");
-    badge.className = `badge ${topMiss.cls}`;
     badge.style.display = "inline-flex";
-    badge.innerHTML = `<span class="dot" style="background:${topMiss.dot}"></span> Most missed: <strong>${topMiss.k}</strong> (${topMiss.v})`;
+    badge.className = `badge z${topMiss.z}`;
+    badge.innerHTML = `<span class="dot" style="background:var(--r1)"></span> Most missed: <strong>${topMiss.z}</strong> (${topMiss.v})`;
 
     const insight = $("insightBadge");
     insight.style.display = "inline-flex";
-    let text = "";
-    if(topMiss.k.includes("Left")) text = "Focus: line + move on LEFT";
-    else if(topMiss.k.includes("Right")) text = "Focus: keep moving through RIGHT";
-    else text = "Focus: timing + trigger discipline";
     insight.className = "badge";
-    insight.innerHTML = `🎯 ${text}`;
+    insight.innerHTML = `🎯 ${insightTextForZone(topMiss.z)}`;
 
     const r = $("rangeSel").value;
     const label =
@@ -963,41 +1000,32 @@
     $("empty").style.display = list.length ? "none" : "block";
 
     for(const r of list){
-      const miss = (r.ml||0)+(r.mc||0)+(r.mr||0);
-      const shotsArr = Array.isArray(r.liveShots) ? r.liveShots : [];
-      const preview = shotsArr.slice(0,25).map((s)=>{
-        // Support new object format OR old string format
-        let cls = "pending";
-        let ch = "·";
-        
-        if(typeof s === "string"){
-          // old format fallback
-          cls = s==="H" ? "hit" : s==="L" ? "l" : s==="C" ? "c" : s==="R" ? "r" : "pending";
-          ch  = s==="H" ? "✓" : s==="L" ? "L" : s==="C" ? "C" : s==="R" ? "R" : "·";
-        } else if(s && typeof s === "object"){
-          const outcome = s.outcome;     // H/M
-          const zone = s.zone || "";     // HL/SL/C/SR/HR
-          const sh = s.shot === 2 ? "²" : "¹";
-        
-          if(outcome === "H"){
-            cls = "hit";
-            ch = zone + sh;
-          } else {
-            // color misses by broad side
-            cls = (zone==="HL"||zone==="SL") ? "l" : (zone==="C" ? "c" : "r");
-            ch = zone + sh;
-          }
-        }
+      const targetsArr = Array.isArray(r.liveTargets) ? r.liveTargets : [];
+      const missCount = (r.miss || 0);
 
-        return `<span style="
+      // Compact preview (25 icons)
+      const preview = targetsArr.slice(0,25).map((t)=>{
+        if(!t) return `<span style="
           display:inline-flex;align-items:center;justify-content:center;
           width:22px;height:22px;border-radius:8px;border:1px solid var(--border);
-          margin:2px;font-weight:950;font-size:10px;
-          ${cls==='hit'?'background:rgba(34,197,94,.10);color:var(--green);border-color:rgba(34,197,94,.28)':''}
-          ${cls==='l'?'background:rgba(239,68,68,.10);color:var(--red);border-color:rgba(239,68,68,.25)':''}
-          ${cls==='c'?'background:rgba(249,115,22,.10);color:var(--orange);border-color:rgba(249,115,22,.25)':''}
-          ${cls==='r'?'background:rgba(234,179,8,.10);color:var(--yellow);border-color:rgba(234,179,8,.25)':''}
-        ">${ch}</span>`;
+          margin:2px;font-weight:950;font-size:12px;color:var(--muted)
+        ">·</span>`;
+
+        const isHit = t.out === "H";
+        const bg = isHit ? "rgba(34,197,94,.10)" : "rgba(239,68,68,.10)";
+        const bd = isHit ? "rgba(34,197,94,.25)" : "rgba(239,68,68,.22)";
+        const col = isHit ? "var(--g1)" : "var(--r1)";
+        const txt = (isHit ? "✓" : "×") + t.zone; // e.g. ✓C, ×HL
+
+        return `<span title="${isHit?"Hit":"Miss"} ${zoneReadable(t.zone)} • Shot ${t.shot}" style="
+          display:inline-flex;align-items:center;justify-content:center;
+          width:32px;height:22px;border-radius:8px;border:1px solid ${bd};
+          background:${bg};
+          margin:2px;
+          font-weight:950;font-size:11px;
+          color:${col};
+          letter-spacing:.2px;
+        ">${txt}</span>`;
       }).join("");
 
       const club = (r.club||"").trim();
@@ -1010,31 +1038,44 @@
         <div class="roundHead">
           <div>
             <div style="font-weight:950">${r.date || ""} <span class="meta2">${place ? "• "+escapeHtml(place) : ""}</span></div>
-            <div class="meta2">Score: <b>${r.hit}/25</b> • Hit ${pct(r.hit,25)}% • Miss ${pct(miss,25)}%</div>
+            <div class="meta2">
+              Score: <b>${r.hit}/25</b> • Hit ${pct(r.hit,25)}% • Miss ${pct(missCount,25)}% • Shot1: ${r.shot1||0} • Shot2: ${r.shot2||0}
+            </div>
           </div>
-         <div class="row" style="gap:8px">
-            <button class="btn" data-pdf="${r.id}">Export PDF</button>
-            <button class="btn danger" data-del="${r.id}">Delete</button>
-         </div>
-
+          <button class="btn danger" data-del="${r.id}">Delete</button>
         </div>
 
         <div style="padding:10px 12px;border-bottom:1px solid var(--border)">
-          <div class="small" style="margin-bottom:6px">Pattern (✓ hit, L/C/R miss type)</div>
-          <div style="display:flex;flex-wrap:wrap;gap:0">${preview || "<span class='small'>No pattern saved.</span>"}</div>
+          <div class="small" style="margin-bottom:6px">Pattern (✓/× + zone)</div>
+          <div style="display:flex;flex-wrap:wrap;gap:0">
+            ${preview || "<span class='small'>No pattern saved.</span>"}
+          </div>
+        </div>
+        
+        <div class="mini">
+          <div class="box g"><div class="k">Hit</div><div class="v" style="color:var(--g1)">${r.hit||0}</div></div>
+          <div class="box rr"><div class="k">Miss</div><div class="v" style="color:var(--r1)">${r.miss||0}</div></div>
+          <div class="box oo"><div class="k">Shot 1 used</div><div class="v" style="color:var(--orange)">${r.shot1||0}</div></div>
+          <div class="box yy"><div class="k">Shot 2 used</div><div class="v" style="color:var(--yellow)">${r.shot2||0}</div></div>
         </div>
 
-        <div class="mini">
-          <div class="box g"><div class="k">Hit</div><div class="v" style="color:var(--green)">${r.hit}</div></div>
-          <div class="box rr"><div class="k">Miss Left</div><div class="v" style="color:var(--red)">${r.ml}</div></div>
-          <div class="box oo"><div class="k">Miss Center</div><div class="v" style="color:var(--orange)">${r.mc}</div></div>
-          <div class="box yy"><div class="k">Miss Right</div><div class="v" style="color:var(--yellow)">${r.mr}</div></div>
+        <div style="padding:12px;border-top:1px solid var(--border)">
+          <div class="small" style="margin-bottom:8px">Misses by zone</div>
+          <div class="row" style="gap:8px;flex-wrap:wrap">
+            <span class="badge zHL">HL: <strong>${(r.missZone && r.missZone.HL) ? r.missZone.HL : 0}</strong></span>
+            <span class="badge zSL">SL: <strong>${(r.missZone && r.missZone.SL) ? r.missZone.SL : 0}</strong></span>
+            <span class="badge zC">C: <strong>${(r.missZone && r.missZone.C) ? r.missZone.C : 0}</strong></span>
+            <span class="badge zSR">SR: <strong>${(r.missZone && r.missZone.SR) ? r.missZone.SR : 0}</strong></span>
+            <span class="badge zHR">HR: <strong>${(r.missZone && r.missZone.HR) ? r.missZone.HR : 0}</strong></span>
+          </div>
         </div>
+
         <div class="notes">${r.notes ? escapeHtml(r.notes) : "<span class='meta2'>No notes.</span>"}</div>
       `;
       container.appendChild(el);
     }
 
+    // wire deletes
     container.querySelectorAll("[data-del]").forEach(btn=>{
       btn.addEventListener("click", ()=>{
         const id = btn.getAttribute("data-del");
@@ -1043,30 +1084,14 @@
         renderAll();
       });
     });
-    container.querySelectorAll("[data-pdf]").forEach(btn=>{
-      btn.addEventListener("click", ()=>{
-        const id = btn.getAttribute("data-pdf");
-        const r = rounds.find(x=>x.id===id);
-        if(!r) return;
-        exportRoundPDF(r);
-      });
-    });
-
   }
-
-  let zonesRendered = false;
 
   function renderAll(){
     rebuildDropdowns();
-    if(!zonesRendered){
-      renderZoneButtons();
-      zonesRendered = true;
-    }
     renderLive();
     renderOverview();
     renderSaved();
   }
-
 
   // Overview controls
   $("rangeSel").addEventListener("change", renderOverview);
@@ -1079,72 +1104,8 @@
   $("savedDate").addEventListener("change", renderSaved);
   $("savedClub").addEventListener("change", renderSaved);
   $("savedField").addEventListener("change", renderSaved);
-  function exportRoundPDF(r){
-    const shotsArr = Array.isArray(r.liveShots) ? r.liveShots : [];
-    const miss = (r.ml||0)+(r.mc||0)+(r.mr||0);
-  
-    // Build 25-cell text line
-    const cells = shotsArr.slice(0,25).map((s, i)=>{
-      if(typeof s === "string"){
-        return s==="H" ? "✓" : s; // legacy
-      }
-      if(s && typeof s === "object"){
-        const sh = s.shot === 2 ? "²" : "¹";
-        if(s.outcome === "H") return `✓${s.zone}${sh}`;
-        return `×${s.zone}${sh}`;
-      }
-      return "·";
-    });
-  
-    const club = (r.club||"").trim();
-    const field = (r.field||"").trim();
-    const place = [club, field].filter(Boolean).join(" • ");
-  
-    const html = `
-  <!doctype html>
-  <html>
-  <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Trap Tracker PDF</title>
-  <style>
-    body{font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial; padding:18px; color:#111}
-    h2{margin:0 0 6px}
-    .meta{color:#444; font-size:12px; margin-bottom:10px}
-    .grid{display:grid; grid-template-columns:repeat(25, 1fr); gap:4px; margin-top:10px}
-    .cell{border:1px solid #bbb; border-radius:6px; padding:6px 4px; text-align:center; font-weight:700; font-size:10px; min-height:26px}
-    .notes{margin-top:12px; font-size:12px; white-space:pre-wrap; border-top:1px solid #ddd; padding-top:10px}
-    .sum{margin-top:10px; font-size:12px}
-  </style>
-  </head>
-  <body>
-    <h2>${escapeHtml(r.date || "")} — ${escapeHtml(place || "—")}</h2>
-    <div class="meta">Score: <b>${r.hit}/25</b> • Hit ${pct(r.hit,25)}% • Miss ${pct(miss,25)}%</div>
-  
-    <div class="sum">
-      <b>Legend:</b> ✓HL¹ hit Hard Left 1st • ×SR² miss Soft Right 2nd
-    </div>
-  
-    <div class="grid">
-      ${cells.map(c=>`<div class="cell">${escapeHtml(c)}</div>`).join("")}
-    </div>
-  
-    <div class="notes"><b>Notes</b><br>${r.notes ? escapeHtml(r.notes) : "—"}</div>
-  
-    <script>
-      window.onload = () => window.print();
-    </script>
-  </body>
-  </html>`;
-  
-    const w = window.open("", "_blank");
-    if(!w){ alert("Popup blocked. Allow popups to export PDF."); return; }
-    w.document.open();
-    w.document.write(html);
-    w.document.close();
-  }
 
-  // first render
+  // First render
   renderAll();
 </script>
 </body>
