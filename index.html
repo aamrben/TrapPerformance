@@ -610,28 +610,40 @@
     grid.innerHTML = "";
     for(let i=0;i<25;i++){
       const t = liveShots[i]; // {outcome, zone, shot}
-      const s = t ? t.outcome : null;
-      
+      const st = Math.floor(i/5) + 1;
+      const inSt = (i % 5) + 1;
+    
+      const el = document.createElement("div");
+    
+      // decide class
+      if(!t){
+        el.className = "shot pending";
+        el.innerHTML = `<div>—</div><div class="meta2"></div><div class="meta">S${st} • #${inSt}</div>`;
+        grid.appendChild(el);
+        continue;
+      }
+    
+      const outcome = t.outcome; // "H" or "M"
+      const zone = t.zone || "";
+      const sh = t.shot === 2 ? "²" : "¹";
+    
       el.className = "shot " + (
-        !t ? "pending" :
-        s==="H" ? "hit" :
-        // color misses by broad direction for quick scanning:
-        (t.zone==="HL"||t.zone==="SL") ? "l" :
-        (t.zone==="C") ? "c" :
+        outcome === "H" ? "hit" :
+        (zone==="HL"||zone==="SL") ? "l" :
+        (zone==="C") ? "c" :
         "r"
       );
-      
-      const label = !t ? "—" : (t.outcome==="H" ? "HIT" : "MISS");
-      const z = !t ? "" : t.zone; // HL/SL/C/SR/HR
-      const sh = !t ? "" : (t.shot===2 ? "²" : "¹");
-      
+    
+      const label = outcome === "H" ? "HIT" : "MISS";
+    
       el.innerHTML = `
-        <div>${label}${t ? " " + sh : ""}</div>
-        <div class="meta2">${t ? z : ""}</div>
+        <div>${label} ${sh}</div>
+        <div class="meta2">${zone}</div>
         <div class="meta">S${st} • #${inSt}</div>
       `;
       grid.appendChild(el);
     }
+
   }
 
   function pushTarget(outcome, zone){
@@ -870,9 +882,6 @@
     ].sort((a,b)=>b.v-a.v);
     
     const topMiss = misses5[0];
-
-
-    const topMiss = misses[0];
 
     $("avgHits").textContent = `${avgHits.toFixed(1)}/25`;
     $("avgHitsSub").textContent = `Avg hit %: ${avgPct}%`;
