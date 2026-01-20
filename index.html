@@ -468,12 +468,60 @@
         </div>
 
           <div class="divider"></div>
+          <!-- Avg misses by direction (HL+SL = LEFT, C = CENTER, SR+HR = RIGHT) -->
+          <div class="stat" id="avgDirStat" style="background:#0f1118">
+            <div class="k">Average misses per round (by direction)</div>
+          
+            <div class="row" style="justify-content:space-between; align-items:flex-start; gap:10px; margin-top:8px">
+              <div style="flex:1;text-align:center">
+                <div style="font-weight:950;color:var(--r1);font-size:18px" id="avgDirL">0.0</div>
+                <div class="small">LEFT</div>
+              </div>
+          
+              <div style="flex:1;text-align:center">
+                <div style="font-weight:950;color:var(--orange);font-size:18px" id="avgDirC">0.0</div>
+                <div class="small">CENTER</div>
+              </div>
+          
+              <div style="flex:1;text-align:center">
+                <div style="font-weight:950;color:var(--r2);font-size:18px" id="avgDirR">0.0</div>
+                <div class="small">RIGHT</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="divider"></div>
 
           <div class="stat" id="secondShotStat" style="background:rgba(234,179,8,.08); border-color:rgba(234,179,8,.28)">
             <div class="k">2nd Shot reliance</div>
             <div class="v" id="avgShot2">0.0/25</div>
             <div class="s" id="avgShot2Sub">Avg per round (selected period)</div>
           </div>
+        <div class="divider"></div>
+
+        <div class="stat" style="background:#0f1118">
+          <div class="k">Score trend (selected period)</div>
+          <div class="s" id="scoreTrendSub">—</div>
+        
+          <svg id="scoreTrendSvg" viewBox="0 0 360 140" width="100%" height="140" style="margin-top:8px">
+            <!-- axes -->
+            <path d="M30 10 V120 H350" fill="none" stroke="var(--border)" stroke-width="2" />
+            <!-- gridlines -->
+            <path d="M30 40 H350" fill="none" stroke="var(--border)" stroke-width="1" opacity="0.5"/>
+            <path d="M30 70 H350" fill="none" stroke="var(--border)" stroke-width="1" opacity="0.5"/>
+            <path d="M30 100 H350" fill="none" stroke="var(--border)" stroke-width="1" opacity="0.5"/>
+        
+            <!-- labels -->
+            <text x="6" y="16" fill="var(--muted)" font-size="10" font-weight="900">25</text>
+            <text x="10" y="46" fill="var(--muted)" font-size="10" font-weight="900">18</text>
+            <text x="10" y="76" fill="var(--muted)" font-size="10" font-weight="900">12</text>
+            <text x="10" y="106" fill="var(--muted)" font-size="10" font-weight="900">6</text>
+        
+            <!-- plot -->
+            <path id="scoreTrendPath" d="" fill="none" stroke="var(--g1)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <g id="scoreTrendDots"></g>
+          </svg>
+        </div>
 
 
         <div class="divider"></div>
@@ -887,6 +935,85 @@
     if(z==="HR") return "Don’t stop the barrel on hard-right — drive through";
     return "Work your weakest zone first";
   }
+  function renderScoreTrend(list){
+    // Show chronological trend by ROUND DATE
+    const data = list.slice().sort((a,b)=>{
+      const da = parseISODate(a.date); const db = parseISODate(b.date);
+      const ta = da ? da.getTime() : 0;
+      const tb = db ? db.getTime() : 0;
+      if(ta !== tb) return ta - tb; // oldest -> newest
+      return (a.createdAt||0) - (b.createdAt||0);
+    });
+  
+    const sub = $("scoreTrendSub");
+    const pathEl = $("scoreTrendPath");
+    const dotsEl = $("scoreTrendDots");
+  
+    if(!data.length){
+      sub.textContent = "No rounds in this period.";
+      pathEl.setAttribute("d", "");
+      dotsEl.innerHTML = "";
+      return;
+    }
+  
+    // Use at most 40 points so it stays readable
+    const maxPts = 40;
+    const step = Math.ceil(data.length / maxPts);
+    const pts = data.filter((_,i)=> i % step === 0);
+  
+    // SVG chart area
+    const W = 360, H = 140;
+    const left = 30, right = 350, top = 10, bottom = 120;
+    const plotW = right - left;
+    const plotH = bottom - top;
+  
+    const n = pts.length;
+    const xAt = (i)=> left + (n===1 ? plotW/2 : (i/(n-1))*plotW);
+  
+    // y maps score 0..25 to bottom..top
+    const yAtScore = (score)=>{
+      const s = Math.max(0, Math.min(25, score||0));
+      return bottom - (s/25)*plotH;
+    };
+  
+    const coords = pts.map((r,i)=>({
+      x: xAt(i),
+      y: yAtScore(r.hit||0),
+      v: (r.hit||0),
+      d: (r.date||"")
+    }));
+  
+    // Build smooth-ish polyline using quadratic curves
+    let d = "";
+    if(coords.length === 1){
+      d = `M ${coords[0].x} ${coords[0].y}`;
+    } else {
+      d = `M ${coords[0].x} ${coords[0].y}`;
+      for(let i=1;i<coords.length;i++){
+        const prev = coords[i-1];
+        const cur = coords[i];
+        const mx = (prev.x + cur.x) / 2;
+        const my = (prev.y + cur.y) / 2;
+        d += ` Q ${prev.x} ${prev.y} ${mx} ${my}`;
+        if(i === coords.length-1){
+          d += ` T ${cur.x} ${cur.y}`;
+        }
+      }
+    }
+  
+    pathEl.setAttribute("d", d);
+  
+    // Dots
+    dotsEl.innerHTML = coords.map(p=>`
+      <circle cx="${p.x}" cy="${p.y}" r="3.5" fill="var(--g1)">
+        <title>${p.d}: ${p.v}/25</title>
+      </circle>
+    `).join("");
+  
+    // Subtitle
+    const first = coords[0], last = coords[coords.length-1];
+    sub.textContent = `${data.length} rounds • ${first.d || "—"} → ${last.d || "—"}`;
+  }
 
   function renderOverview(){
     const isMonthPick = $("rangeSel").value === "monthPick";
@@ -914,7 +1041,11 @@
       $("mostMissedBadge").style.display = "none";
       $("insightBadge").style.display = "none";
       $("avgShot2").textContent = "0.0/25";
-      $("avgShot2Sub").textContent = "Avg per round (selected period)";
+      $("avgDirL").textContent = "0.0";
+      $("avgDirC").textContent = "0.0";
+      $("avgDirR").textContent = "0.0";
+      
+      renderScoreTrend([]);
       return;
     }
 
@@ -926,7 +1057,14 @@
     const best = Math.max(...scores);
     const worst = Math.min(...scores);
 
-    const byRecent = list.slice().sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+    const byRecent = list.slice().sort((a,b)=>{
+      const da = parseISODate(a.date); const db = parseISODate(b.date);
+      const ta = da ? da.getTime() : 0;
+      const tb = db ? db.getTime() : 0;
+      if(tb !== ta) return tb - ta;
+      return (b.createdAt||0) - (a.createdAt||0);
+    });
+
     const last10List = byRecent.slice(0,10);
     const last10Avg = last10List.length ? (last10List.reduce((s,r)=>s+(r.hit||0),0) / last10List.length) : null;
 
@@ -978,6 +1116,14 @@
     $("avgMC").textContent  = avgM.C.toFixed(1);
     $("avgMSR").textContent = avgM.SR.toFixed(1);
     $("avgMHR").textContent = avgM.HR.toFixed(1);
+    // Avg misses per round by direction (LEFT = HL+SL, CENTER = C, RIGHT = SR+HR)
+    const avgDirL = (missTotals.HL + missTotals.SL) / list.length;
+    const avgDirC = (missTotals.C) / list.length;
+    const avgDirR = (missTotals.SR + missTotals.HR) / list.length;
+    
+    $("avgDirL").textContent = avgDirL.toFixed(1);
+    $("avgDirC").textContent = avgDirC.toFixed(1);
+    $("avgDirR").textContent = avgDirR.toFixed(1);
 
     $("missDiagramSub").textContent = `Avg misses per round (selected period)`;
 
@@ -1004,8 +1150,9 @@
       r==="monthPick" ? ( $("monthSel").value ? monthLabel($("monthSel").value) : "Past month" ) :
       "Selected period";
     $("overviewSubtitle").textContent = `Stats for: ${label}`;
+    renderScoreTrend(list);
   }
-
+  
   function renderSaved(){
     let list = getSavedFilteredList();
 
