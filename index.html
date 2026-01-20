@@ -506,17 +506,10 @@
           <svg id="scoreTrendSvg" viewBox="0 0 360 140" width="100%" height="140" style="margin-top:8px">
             <!-- axes -->
             <path d="M30 10 V120 H350" fill="none" stroke="var(--border)" stroke-width="2" />
-            <!-- gridlines -->
-            <path d="M30 40 H350" fill="none" stroke="var(--border)" stroke-width="1" opacity="0.5"/>
-            <path d="M30 70 H350" fill="none" stroke="var(--border)" stroke-width="1" opacity="0.5"/>
-            <path d="M30 100 H350" fill="none" stroke="var(--border)" stroke-width="1" opacity="0.5"/>
-        
-            <!-- labels -->
-           <text x="6" y="16" fill="var(--muted)" font-size="10" font-weight="900">25</text>
-           <text x="10" y="46" fill="var(--muted)" font-size="10" font-weight="900">20</text>
-           <text x="10" y="76" fill="var(--muted)" font-size="10" font-weight="900">15</text>
-           <text x="10" y="106" fill="var(--muted)" font-size="10" font-weight="900">10</text>
-
+            
+            <!-- dynamic grid + labels -->
+            <g id="scoreTrendGrid"></g>
+            <g id="scoreTrendYLabels"></g>
         
             <!-- plot -->
             <path id="scoreTrendPath" d="" fill="none" stroke="var(--g1)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
@@ -949,13 +942,22 @@
     const sub = $("scoreTrendSub");
     const pathEl = $("scoreTrendPath");
     const dotsEl = $("scoreTrendDots");
+    const gridEl = $("scoreTrendGrid");
+    const yLabEl = $("scoreTrendYLabels");
+
   
     if(!data.length){
       sub.textContent = "No rounds in this period.";
       pathEl.setAttribute("d", "");
       dotsEl.innerHTML = "";
+      gridEl.innerHTML = "";
+      yLabEl.innerHTML = "";
       return;
     }
+    
+    const allScores = data.map(r => (r.hit || 0));
+    const minScore = Math.min(...allScores);
+    const maxScore = Math.max(...allScores);
   
     // Use at most 40 points so it stays readable
     const maxPts = 40;
@@ -983,7 +985,27 @@
       v: (r.hit||0),
       d: (r.date||"")
     }));
-  
+    
+    // Gridlines every 1 point from 10 to 25
+    let gridHtml = "";
+    for(let s=10; s<=25; s++){
+      const y = yAtScore(s);
+    
+      // Make 5-point lines a bit stronger (10,15,20,25)
+      const strong = (s % 5 === 0);
+      const op = strong ? 0.55 : 0.18;
+      const w  = strong ? 1.2 : 0.8;
+    
+      gridHtml += `<path d="M${left} ${y} H${right}" fill="none" stroke="var(--border)" stroke-width="${w}" opacity="${op}"/>`;
+    }
+    gridEl.innerHTML = gridHtml;
+    
+    // Y-axis labels only at 10/15/20/25
+    yLabEl.innerHTML = [10,15,20,25].map(s=>{
+      const y = yAtScore(s) + 3; // slight vertical align tweak
+      return `<text x="6" y="${y}" fill="var(--muted)" font-size="10" font-weight="900">${s}</text>`;
+    }).join("");
+
     // Build smooth-ish polyline using quadratic curves
     let d = "";
     if(coords.length === 1){
@@ -1013,7 +1035,7 @@
   
     // Subtitle
     const first = coords[0], last = coords[coords.length-1];
-    sub.textContent = `${data.length} rounds • ${first.d || "—"} → ${last.d || "—"}`;
+    sub.textContent = `${data.length} rounds • ${first.d || "—"} → ${last.d || "—"} • Min ${minScore}/25 • Max ${maxScore}/25`;
   }
 
   function renderOverview(){
