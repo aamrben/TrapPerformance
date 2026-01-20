@@ -1378,11 +1378,24 @@ function exportSavedRoundsPDF(){
     const best = Math.max(...scores);
     const worst = Math.min(...scores);
 
-    const byRecent = list.slice().sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
-    const last10 = byRecent.slice(0,10);
+    // Last 10 rounds should ignore export filters: use ALL rounds, most recent by ROUND DATE
+    const allByRecent = rounds.slice().sort((a,b)=>{
+      const da = parseISODate(a.date); const db = parseISODate(b.date);
+      const ta = da ? da.getTime() : 0;
+      const tb = db ? db.getTime() : 0;
+    
+      // newest round date first
+      if(tb !== ta) return tb - ta;
+    
+      // tie-breaker: newest saved first
+      return (b.createdAt||0) - (a.createdAt||0);
+    });
+    
+    const last10 = allByRecent.slice(0,10);
     const last10Avg = last10.length >= 10
       ? (last10.reduce((s,r)=>s+(r.hit||0),0) / 10)
       : null;
+
 
     const totalShot2 = list.reduce((s,r)=>s+(r.shot2||0),0);
     const avgShot2 = totalShot2 / list.length;
