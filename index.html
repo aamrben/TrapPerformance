@@ -621,10 +621,12 @@
           <div class="v" id="cartridgeTotal" style="font-size:34px;font-weight:950">0</div>
         </div>
     
-        <div class="row" style="gap:8px; align-items:center">
-          <input id="cartridgeStep" type="number" min="1" value="25" style="width:90px" />
-          <button class="btn" id="cartridgeMinus" type="button">− Remove</button>
-          <button class="btn primary" id="cartridgePlus" type="button">+ Add</button>
+        <div class="row" style="gap:8px; justify-content:flex-end">
+          <button class="btn" id="exportProfileJsonBtn" type="button">Export JSON</button>
+          <button class="btn" id="importProfileJsonBtn" type="button">Import JSON</button>
+          <input id="importProfileFile" type="file" accept="application/json" style="display:none" />
+          <button class="btn" id="addProfileBtn" type="button">+ Add</button>
+          <button class="btn danger" id="removeProfileBtn" type="button">− Remove</button>
         </div>
       </div>
     
@@ -721,6 +723,7 @@
     </div>
   </div>
 </div>
+
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -2046,6 +2049,140 @@ $("cartridgeMinus").addEventListener("click", ()=>{
     renderProfilesUI();
   });
 
+  // ===== Export/Import Profiles as JSON file (unlimited size) =====
+
+  function downloadTextFile(filename, text){
+    const blob = new Blob([text], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+  
+  function safeParseJSON(text){
+    try { return JSON.parse(text); } catch { return null; }
+  }
+  
+  function buildProfilesExportPayload(mode){
+    // mode: "active" | "all"
+    const exportProfiles = (mode === "all") ? profiles : [activeProfile()];
+    return {
+      v: 1,
+      exportedAt: Date.now(),
+      app: "Trap Tracker",
+      profiles: exportProfiles.map(p => {
+        const pid = p.id;
+        const roundsRaw = localStorage.getItem(roundsKey(pid));
+        const cartRaw   = localStorage.getItem(cartKey(pid));
+        return {
+          id: p.id,
+          name: p.name,
+          rounds: roundsRaw ? (safeParseJSON(roundsRaw) || []) : [],
+          cartManual: cartRaw ? Number(cartRaw) : 0
+        };
+      })
+    };
+  }
+  
+  function importProfilesPayload(payload){
+    if(!payload || payload.v !== 1 || !Array.isArray(payload.profiles)){
+      alert("Invalid JSON file (missing profiles).");
+      return;
+    }
+  
+    const existingIds = new Set(profiles.map(p => p.id));
+  
+    let importedCount = 0;
+  
+    for(const p of payload.profiles){
+      if(!p || !p.name) continue;
+  
+      // Avoid overwriting: if ID exists, generate a new one
+      let newId = (p.id && !existingIds.has(p.id))
+        ? p.id
+        : `p_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,7)}`;
+  
+      existingIds.add(newId);
+  
+      const newProfile = { id: newId, name: String(p.name).trim() || "Imported" };
+      profiles.push(newProfile);
+  
+      // Save rounds
+      const roundsList = Array.isArray(p.rounds) ? p.rounds : [];
+      localStorage.setItem(roundsKey(newId), JSON.stringify(roundsList));
+  
+      // Save cartridge manual
+      const cartManual = Number(p.cartManual || 0);
+      localStorage.setItem(
+        cartKey(newId),
+        String(Number.isFinite(cartManual) ? Math.max(0, Math.floor(cartManual)) : 0)
+      );
+  
+      importedCount++;
+    }
+  
+    if(importedCount === 0){
+      alert("No profiles found in this file.");
+      return;
+    }
+  
+    saveProfiles(profiles);
+  
+    // Switch to last imported profile
+    activeProfileId = profiles[profiles.length - 1].id;
+    setActiveProfileId(activeProfileId);
+  
+    rounds = loadRoundsForActive();
+    liveTargets = [];
+    updateActiveProfileLine();
+    renderAll();
+    openProfiles();
+  
+    alert(`Imported ${importedCount} profile(s). ✅`);
+  }
+  
+  // Export JSON
+  $("exportProfileJsonBtn").addEventListener("click", ()=>{
+    const mode = confirm("Export ALL profiles?\n\nOK = All profiles\nCancel = Only active profile")
+      ? "all"
+      : "active";
+  
+    const payload = buildProfilesExportPayload(mode);
+    const ymd = new Date().toISOString().slice(0,10);
+    const filename = mode === "all"
+      ? `trap-tracker-profiles-${ymd}.json`
+      : `trap-tracker-profile-${(activeProfile().name||"active").replace(/\s+/g,"-").toLowerCase()}-${ymd}.json`;
+  
+    downloadTextFile(filename, JSON.stringify(payload, null, 2));
+  });
+  
+  // Import JSON (open file picker)
+  $("importProfileJsonBtn").addEventListener("click", ()=>{
+    $("importProfileFile").value = "";
+    $("importProfileFile").click();
+  });
+  
+  // Handle file selection
+  $("importProfileFile").addEventListener("change", async (e)=>{
+    const file = e.target.files && e.target.files[0];
+    if(!file) return;
+  
+    try{
+      const text = await file.text();
+      const payload = safeParseJSON(text);
+      if(!payload){
+        alert("That file is not valid JSON.");
+        return;
+      }
+      importProfilesPayload(payload);
+    }catch(err){
+      alert("Could not read that file.");
+    }
+  });
 
   // First render with active profile
   const initialProfileId = getActiveProfileId();
