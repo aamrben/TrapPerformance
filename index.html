@@ -730,21 +730,20 @@
     const idx = liveTargets.length;
     const station = stationIndexFromTargetIndex(Math.max(0, idx)) + 1;
     const {hit, shot2} = countsFromTargets(liveTargets);
-
-    $("shotUsedV").textContent = shotUsed === 1 ? "1st" : "2nd";
+  
     $("shotV").textContent = `${idx}/25`;
     $("scoreV").textContent = `${hit}/25`;
     $("hitPctV").textContent = `${pct(hit, Math.max(1, idx))}%`;
     $("shot2CountV").textContent = `${shot2}`;
-
-
-    if(idx === 0) $("statusLine").textContent = "Ready. Select shot used (1st/2nd), then tap zone (Hit or Miss).";
-    else if(idx < 25) $("statusLine").textContent = `Live… Station ${Math.min(5, station)} • Target ${idx+1}/25 • Shot used: ${shotUsed}`;
+  
+    if(idx === 0) $("statusLine").textContent = "Ready. Pick HIT shot (1st/2nd), then tap a zone. MISS is always 2nd shot.";
+    else if(idx < 25) $("statusLine").textContent = `Live… Station ${Math.min(5, station)} • Target ${idx+1}/25 • Hit shot: ${shotUsed === 1 ? "1st" : "2nd"}`;
     else $("statusLine").textContent = "Round complete. Save it or reset.";
-
+  
     const done = idx >= 25;
     document.querySelectorAll(".zoneBtn").forEach(b => b.disabled = done);
     $("undoBtn").disabled = (idx === 0);
+
 
     const grid = $("shotGrid");
     grid.innerHTML = "";
