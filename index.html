@@ -734,7 +734,7 @@
     $("hitPctV").textContent = `${pct(hit, Math.max(1, idx))}%`;
     $("shot2CountV").textContent = `${shot2}`;
   
-    if(idx === 0) $("statusLine").textContent = "Ready. Pick HIT shot (1st/2nd), then tap a zone. MISS is always 2nd shot.";
+    if(idx === 0) $("statusLine").textContent = "Ready.";
     else if(idx < 25) $("statusLine").textContent = `Live… Target ${idx+1}/25 • Hit shot: ${shotUsed === 1 ? "1st" : "2nd"}`;
     else $("statusLine").textContent = "Round complete. Save it or reset.";
   
