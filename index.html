@@ -1648,7 +1648,7 @@ function exportSavedRoundsPDF(){
       : ((loadProfiles().find(p => p.id === getActiveProfileId()) || {}).name || "Unknown");
   
   const title = `Olympic TrapPerformance — ${profileName}`;
-  const subtitle = `Profile: ${profileName} • Filters: ${dateLabel} • ${clubLabel} • ${fieldLabel} • Exported: ${new Date().toLocaleString()}`;
+  const subtitle = `Filters: ${dateLabel} • ${clubLabel} • ${fieldLabel} • Exported: ${new Date().toLocaleString()}`;
 
 
   // ---- helpers (PDF-only) ----
@@ -1779,27 +1779,24 @@ function exportSavedRoundsPDF(){
       <div class="card">
         <div class="head">
           <div>
-            <div class="date">${escapeHtml(r.date||"")}</div>
-            <div class="meta">${escapeHtml(place)}</div>
+            <div class="date">
+              ${escapeHtml(r.date||"")}
+              <span class="meta">
+                • ${escapeHtml(place)}
+              </span>
+            </div>
           </div>
           <div class="score">${r.hit || 0}/25</div>
         </div>
 
-        <!-- remove Hit/Miss text + remove %; keep only 1st/2nd -->
         <div class="line">
-          1st Shot: <b>${r.shot1||0}</b> • 2nd Shot: <b>${r.shot2||0}</b>
+          1st Shot: <b>${r.shot1||0}</b> •
+          2nd Shot: <b>${r.shot2||0}</b> &nbsp;&nbsp;|&nbsp;&nbsp;
+          HL:${mz("HL")} SL:${mz("SL")} C:${mz("C")} SR:${mz("SR")} HR:${mz("HR")}
         </div>
 
-        <div class="zones">
-          <span>HL: <b>${mz("HL")}</b></span>
-          <span>SL: <b>${mz("SL")}</b></span>
-          <span>C: <b>${mz("C")}</b></span>
-          <span>SR: <b>${mz("SR")}</b></span>
-          <span>HR: <b>${mz("HR")}</b></span>
-        </div>
 
         <div class="pattern">
-          <b>Pattern:</b>
           ${pat}
         </div>
 
@@ -1861,7 +1858,7 @@ function exportSavedRoundsPDF(){
       border:1px solid #ddd;
       border-radius:12px;
       padding:12px;
-      margin:0 0 12px;
+      margin:0 0 10px;
       break-inside: avoid;
     }
     .head{ display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }
@@ -1869,10 +1866,10 @@ function exportSavedRoundsPDF(){
     .meta{ font-size:12px; color:#444; margin-top:2px; }
     .score{ font-size:16px; font-weight:900; }
 
-    .line{ font-size:12px; margin-top:8px; color:#222; }
+    .line{ font-size:12px; margin-top:6px; color:#222; }
     .zones{ display:flex; flex-wrap:wrap; gap:10px; font-size:12px; margin-top:8px; color:#222; }
 
-    .pattern{ font-size:11px; margin-top:10px; color:#222; }
+    .pattern{ font-size:11px; margin-top:6px; color:#222; }
     .notes{ font-size:11px; margin-top:8px; color:#222; }
 
     /* Pattern layout: 5 groups of 5, direction under ✓/×, one line */
