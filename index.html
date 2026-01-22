@@ -402,11 +402,11 @@
           </div>
           <div style="flex:1;min-width:160px">
             <label>Club (optional)</label>
-            <input id="club" placeholder="e.g. Rabat Shooting Club" />
+            <input id="club" placeholder="e.g. Rabat, Umbriaverde" />
           </div>
           <div style="flex:1;min-width:160px">
             <label>Field (optional)</label>
-            <input id="field" placeholder="e.g. Field 2" />
+            <input id="field" placeholder="e.g. 1, 2" />
           </div>
         </div>
 
@@ -731,7 +731,7 @@
     <div class="divider"></div>
 
     <div class="row" style="gap:8px; align-items:center">
-      <input id="newProfileName" placeholder="New profile name (e.g. Aamr, Dad, Coach)" />
+      <input id="newProfileName" placeholder="New profile name (e.g. Aamr, Pellielo)" />
       <button class="btn primary" id="addProfileBtn" type="button">+ Add</button>
     </div>
 
@@ -1642,8 +1642,14 @@ function exportSavedRoundsPDF(){
   const clubLabel = $("savedClub").value === "all" ? "All clubs" : $("savedClub").value;
   const fieldLabel = $("savedField").value === "all" ? "All fields" : $("savedField").value;
 
-  const title = `Olympic Trap Performance — Saved Rounds Export`;
-  const subtitle = `Filters: ${dateLabel} • ${clubLabel} • ${fieldLabel} • Exported: ${new Date().toLocaleString()}`;
+  const profileName =
+    (activeProfile && activeProfile.name)
+      ? activeProfile.name
+      : ((loadProfiles().find(p => p.id === getActiveProfileId()) || {}).name || "Unknown");
+  
+  const title = `Olympic TrapPerformance — ${profileName}`;
+  const subtitle = `Profile: ${profileName} • Filters: ${dateLabel} • ${clubLabel} • ${fieldLabel} • Exported: ${new Date().toLocaleString()}`;
+
 
   // ---- helpers (PDF-only) ----
   const fmt1 = (n)=> (Math.round(n*10)/10).toFixed(1);
