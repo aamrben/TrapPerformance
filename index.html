@@ -254,7 +254,12 @@
           <div class="stat"><div class="k">Score</div><div class="v" id="scoreV">0/25</div></div>
           <div class="stat"><div class="k">Target</div><div class="v" id="shotV">0/25</div></div>
           <div class="stat"><div class="k">Hit %</div><div class="v" id="hitPctV">0%</div></div>
-          <div class="stat"><div class="k">Shot used</div><div class="v" id="shotUsedV">1st</div></div>
+          <div class="stat">
+            <div class="k">2nd shot count</div>
+            <div class="v" id="shot2CountV">0</div>
+            <div class="s">All misses + 2nd-shot hits</div>
+          </div>
+
         </div>
 
         <div class="divider"></div>
@@ -266,12 +271,14 @@
             </div>
 
             <div class="row" style="gap:8px">
-              <div class="small" style="font-weight:900">Shot used</div>
-              <div class="seg" role="tablist" aria-label="Shot used">
+              <div class="small" style="font-weight:900">Hit shot</div>
+              <div class="seg" role="tablist" aria-label="Hit shot">
                 <button id="shot1Btn" class="active" type="button">1st</button>
                 <button id="shot2Btn" type="button">2nd</button>
               </div>
+              <div class="hint" style="margin-left:8px">Applies to HITS only • MISS = 2nd shot</div>
             </div>
+
           </div>
 
           <!-- HITS -->
@@ -722,12 +729,14 @@
   function renderLive(){
     const idx = liveTargets.length;
     const station = stationIndexFromTargetIndex(Math.max(0, idx)) + 1;
-    const {hit} = countsFromTargets(liveTargets);
+    const {hit, shot2} = countsFromTargets(liveTargets);
 
     $("shotUsedV").textContent = shotUsed === 1 ? "1st" : "2nd";
     $("shotV").textContent = `${idx}/25`;
     $("scoreV").textContent = `${hit}/25`;
     $("hitPctV").textContent = `${pct(hit, Math.max(1, idx))}%`;
+    $("shot2CountV").textContent = `${shot2}`;
+
 
     if(idx === 0) $("statusLine").textContent = "Ready. Select shot used (1st/2nd), then tap zone (Hit or Miss).";
     else if(idx < 25) $("statusLine").textContent = `Live… Station ${Math.min(5, station)} • Target ${idx+1}/25 • Shot used: ${shotUsed}`;
@@ -768,9 +777,15 @@
 
   function pushTarget(out, zone){
     if(liveTargets.length >= 25) return;
-    liveTargets.push({ out, zone, shot: shotUsed });
+  
+    // ✅ Misses are ALWAYS 2nd shot automatically
+    // ✅ Hits use the toggle (shotUsed)
+    const shot = (out === "M") ? 2 : shotUsed;
+  
+    liveTargets.push({ out, zone, shot });
     renderLive();
   }
+
 
   // Wire zone buttons
   document.querySelectorAll(".zoneBtn").forEach(btn=>{
