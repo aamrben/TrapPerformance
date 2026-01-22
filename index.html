@@ -619,10 +619,16 @@
       <div class="row" style="justify-content:space-between; align-items:flex-end; gap:10px">
         <div>
           <div class="v" id="cartridgeTotal" style="font-size:34px;font-weight:950">0</div>
+          <div class="small">Auto from rounds + manual adjustment</div>
         </div>
     
+        <div class="row" style="gap:8px; align-items:center">
+          <input id="cartridgeStep" type="number" min="1" value="1" style="width:90px" />
+          <button class="btn" id="cartridgeMinus" type="button">−</button>
+          <button class="btn primary" id="cartridgePlus" type="button">+</button>
+        </div>
       </div>
-    
+    </div>    
     
     </div>
 
@@ -1909,17 +1915,23 @@ function exportSavedRoundsPDF(){
 // Button handler
 $("exportPdfBtn").addEventListener("click", exportSavedRoundsPDF);
 
-$("cartridgePlus").addEventListener("click", ()=>{
-  const step = Math.max(1, Math.floor(Number($("cartridgeStep").value || 1)));
-  saveCartridgeManual(loadCartridgeManual() + step);
-  renderCartridgesSection();
-});
-
-$("cartridgeMinus").addEventListener("click", ()=>{
-  const step = Math.max(1, Math.floor(Number($("cartridgeStep").value || 1)));
-  saveCartridgeManual(Math.max(0, loadCartridgeManual() - step));
-  renderCartridgesSection();
-});
+  const plusBtn = $("cartridgePlus");
+  const minusBtn = $("cartridgeMinus");
+  const stepInp = $("cartridgeStep");
+  
+  if (plusBtn && minusBtn && stepInp) {
+    plusBtn.addEventListener("click", () => {
+      const step = Math.max(1, Math.floor(Number(stepInp.value || 1)));
+      saveCartridgeManual(loadCartridgeManual() + step);
+      renderCartridgesSection();
+    });
+  
+    minusBtn.addEventListener("click", () => {
+      const step = Math.max(1, Math.floor(Number(stepInp.value || 1)));
+      saveCartridgeManual(Math.max(0, loadCartridgeManual() - step));
+      renderCartridgesSection();
+    });
+  }
 
 
   function renderAll(){
