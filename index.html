@@ -367,7 +367,12 @@
     }
     
     /* ✅ Prevent flex/grid children from overflowing/overlapping */
-    .row > * { min-width: 0; }           /* IMPORTANT */
+    .row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: nowrap; /* 🔑 prevents date wrapping */
+    }
     input, select, textarea { min-width: 0; }
     
     /* ✅ iOS/Safari date input: prevents weird internal overflow */
@@ -398,6 +403,25 @@
     @media (max-width: 520px){
       .filters{ grid-template-columns: 1fr !important; }
     }
+
+    .filters-4{
+      display:grid;
+      gap:10px;
+      grid-template-columns:repeat(4,1fr);
+    }
+    
+    .filters-4 input,
+    .filters-4 select{
+      width:100%;
+    }
+    
+    /* iPhone: 2 columns so it never overlaps */
+    @media (max-width: 520px){
+      .filters-4{
+        grid-template-columns:repeat(2,1fr);
+      }
+    }
+
 
 
   </style>
@@ -507,7 +531,7 @@
         <div class="divider"></div>
 
         <div class="row">
-          <div style="flex:1;min-width:110px">
+          <div style="flex:1;min-width:140px">
             <label>Date</label>
             <input id="date" type="date" />
           </div>
@@ -754,7 +778,7 @@
    
 
     <!-- SAVED ROUNDS -->
-    <div class="card" style="margin-top:12px" style="background:#000D0D">
+    <div class="card" style="margin-top:12px;background:#000D0D">
       <div class="row" style="justify-content:space-between">
         <div>
           <div style="font-weight:950;font-size:16px">Saved Rounds</div>
@@ -769,7 +793,8 @@
 
       <div class="divider"></div>
 
-      <div class="filters" style="display:grid;gap:10px;grid-template-columns: 1fr 1fr 1fr 1fr;">
+      <div class="filters filters-4">
+
         <div>
           <label>Show</label>
           <select id="savedRange">
