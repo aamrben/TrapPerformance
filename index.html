@@ -63,7 +63,7 @@
       padding:10px 12px;
       border-radius:14px;
       border:1px solid var(--border);
-      background:#010817;
+      background:#0e0f11;
       color:var(--text);
       outline:none;
     }
@@ -479,7 +479,8 @@
           </div>
           <div style="flex:1;min-width:160px">
             <label>Club (optional)</label>
-            <input id="club" placeholder="e.g. Rabat, Umbriaverde" />
+            <input id="club" list="clubList" placeholder="e.g. Rabat, Umbriaverde" />
+            <datalist id="clubList"></datalist>
           </div>
           <div style="flex:1;min-width:160px">
             <label>Field (optional)</label>
@@ -513,7 +514,7 @@
             <select id="rangeSel">
               <option value="today">Today</option>
               <option value="week">This week</option>
-              <option value="month">This month</option>
+              <option value="month" selected>This month</option>
               <option value="last3">Last 3 months</option>
               <option value="last6">Last 6 months</option>
               <option value="year">This year</option>
@@ -740,7 +741,7 @@
           <select id="savedRange">
             <option value="today">Today</option>
             <option value="week">This week</option>
-            <option value="month">This month</option>
+            <option value="month" selected>This month</option>
             <option value="last3">Last 3 months</option>
             <option value="last6">Last 6 months</option>
             <option value="year">This year</option>
@@ -867,6 +868,10 @@
   function makeKey(profileId){
     return `${KEY_PREFIX}__${profileId}`;
   }
+
+  // ---- Initial defaults (run once) ----
+  $("rangeSel").value = "month";
+  $("savedRange").value = "month";
   
   function applyProfile(profileId){
     const profiles = loadProfiles();
@@ -1170,6 +1175,15 @@
     const keepMonth = monthSel.value || "";
     monthSel.innerHTML = `<option value="">Select month…</option>` + monthKeys.map(k=>`<option value="${k}">${monthLabel(k)}</option>`).join("");
     monthSel.value = monthKeys.includes(keepMonth) ? keepMonth : "";
+
+    // 🔹 Live Round club suggestions (typing + dropdown)
+    const dl = $("clubList");
+    if (dl) {
+      dl.innerHTML = clubs
+        .filter(Boolean)
+        .map(c => `<option value="${escapeHtml(c)}"></option>`)
+        .join("");
+    }
   }
 
   function filterByMeta(list, clubVal, fieldVal){
