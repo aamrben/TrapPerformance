@@ -422,6 +422,56 @@
       }
     }
 
+    /* Force iOS date value to stay single-line */
+    input[type="date"]{
+      width:100%;
+      min-width:0;
+      font-size:14px;          /* smaller helps prevent wrap */
+      line-height:20px;
+      padding:12px 14px;
+    }
+    
+    /* iOS-specific internal date text */
+    input[type="date"]::-webkit-date-and-time-value{
+      white-space:nowrap;      /* key line */
+      text-align:left;
+    }
+    
+    /* Optional: shrink the calendar icon a bit (helps on small screens) */
+    input[type="date"]::-webkit-calendar-picker-indicator{
+      opacity:0.85;
+    }
+
+    /* Saved Rounds filters: 4 columns on desktop */
+    .filters--saved{
+      display:grid !important;
+      gap:10px;
+      grid-template-columns:repeat(4, minmax(0, 1fr));
+      align-items:end;
+    }
+    
+    /* Tablet */
+    @media (max-width: 900px){
+      .filters--saved{
+        grid-template-columns:repeat(2, minmax(0, 1fr));
+      }
+    }
+    
+    /* Phone */
+    @media (max-width: 520px){
+      .filters--saved{
+        grid-template-columns:1fr;
+      }
+    }
+   
+    .row--nowrap{
+      flex-wrap:nowrap;
+    }
+    .row--nowrap > *{
+      min-width:0;
+    }
+
+
 
 
   </style>
@@ -486,7 +536,7 @@
             
             </div>
 
-            <div class="row" style="gap:8px">
+            <div class="row row--nowrap" style="gap:12px">
               <div class="small" style="font-weight:900">Hit shot</div>
               <div class="seg" role="tablist" aria-label="Hit shot">
                 <button id="shot1Btn" class="active" type="button">1st</button>
@@ -795,7 +845,7 @@
 
       <div class="divider"></div>
 
-      <div class="filters filters-4">
+      <div class="filters filters--saved">
 
         <div>
           <label>Show</label>
