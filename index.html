@@ -366,43 +366,6 @@
       transition: opacity .22s ease;
     }
     
-    /* ✅ Prevent flex/grid children from overflowing/overlapping */
-    .row {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: nowrap; /* 🔑 prevents date wrapping */
-    }
-    input, select, textarea { min-width: 0; }
-    
-    /* ✅ iOS/Safari date input: prevents weird internal overflow */
-    input[type="date"]{
-      -webkit-appearance: none;
-      appearance: none;
-      text-align: left;                 /* avoids centered text clipping */
-      padding-right: 44px;              /* space for calendar icon */
-    }
-    
-    /* (optional) keep the calendar icon visible + aligned */
-    input[type="date"]::-webkit-calendar-picker-indicator{
-      opacity: .75;
-      cursor: pointer;
-    }
-    
-    /* ✅ Saved Rounds filters: don’t force 4 columns on small screens */
-    .filters{
-      display: grid;
-      gap: 10px;
-    }
-    
-    /* Your Saved Rounds filters currently force 4 columns inline.
-       Override it responsively: */
-    @media (max-width: 860px){
-      .filters{ grid-template-columns: 1fr 1fr !important; }
-    }
-    @media (max-width: 520px){
-      .filters{ grid-template-columns: 1fr !important; }
-    }
 
   
 
