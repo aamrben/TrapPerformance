@@ -565,6 +565,12 @@
       background:rgba(0,208,255,.06) !important;
     }
 
+    #competitionPage{
+      padding:14px;
+      max-width:1020px;
+      margin:0 auto;
+    }
+
 
 
   </style>
@@ -2585,6 +2591,11 @@ $("exportPdfBtn").addEventListener("click", exportSavedRoundsPDF);
     const holder = $("compList");
     holder.innerHTML = "";
     $("compEmpty").style.display = list.length ? "none" : "block";
+   
+    const roundsLine = roundsArr
+    .map(v => (Number.isFinite(v) ? String(v) : "—"))
+    .join(" • ");
+
   
     for(const c of list){
       const roundsCount = Number(c.roundsCount || 5);
@@ -2615,8 +2626,12 @@ $("exportPdfBtn").addEventListener("click", exportSavedRoundsPDF);
             <span class="badge">
               <strong>${sum}</strong> / ${roundsCount * 25}
             </span>
-            <span class="badge">${escapeHtml(finalTxt)}</span>
+          
+            <span class="badge">
+              Final: <strong>${finalTxt}</strong> • Rounds: <strong>${escapeHtml(roundsLine)}</strong>
+            </span>
           </div>
+
         </div>
   
   
