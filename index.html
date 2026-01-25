@@ -2616,10 +2616,10 @@ $("exportPdfBtn").addEventListener("click", exportSavedRoundsPDF);
           <div class="compBadges">
             <span class="badge">
               <strong>${sum}</strong> / ${roundsCount * 25}
-            </span>
-  
-            <span class="badge">
-              Final: <strong>${escapeHtml(String(finalVal))}</strong> • Rounds: <strong>${escapeHtml(roundsLine)}</strong>
+              <span style="font-weight:500; opacity:.85">
+                &nbsp; • Final: ${escapeHtml(String(finalVal))}
+                &nbsp; • Rounds: ${escapeHtml(roundsLine.replace(/ • /g, " · "))}
+              </span>
             </span>
           </div>
         </div>
