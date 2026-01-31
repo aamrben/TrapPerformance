@@ -1458,23 +1458,48 @@
       });
   
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
+
       const src = ctx.createMediaStreamSource(stream);
       const analyser = ctx.createAnalyser();
       analyser.fftSize = 2048;
-  
+      
+      // iOS quirk: keep graph “alive” by connecting to destination with 0 gain
+      const zero = ctx.createGain();
+      zero.gain.value = 0;
+      
       src.connect(analyser);
-  
+      analyser.connect(zero);
+      zero.connect(ctx.destination);
+      
+      // iOS: explicitly resume audio context (must be in a user gesture)
+      if (ctx.state === "suspended") {
+        await ctx.resume();
+      }
+      
+      // If still suspended, force-unlock with a tiny silent oscillator tick
+      if (ctx.state === "suspended") {
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        g.gain.value = 0;
+        osc.connect(g);
+        g.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.02);
+        await ctx.resume().catch(()=>{});
+      }
+      
       mic.enabled = true;
       mic.stream = stream;
       mic.ctx = ctx;
       mic.src = src;
       mic.analyser = analyser;
-  
+      
       mic.baseline = 0;
       mic.smooth = 0;
-  
+      
       micResetCycle();
       micLoop();
+
     }catch(err){
       alert("Mic permission denied or not available.");
       console.error(err);
@@ -1549,7 +1574,9 @@
   
       mic.lastEventAt = now;
     }
-  
+    
+    $("micStatus").textContent = `Level: ${(mic.smooth*1000).toFixed(1)} • Base: ${(mic.baseline*1000).toFixed(1)} • ${mic.state}`;
+
     micUI();
     mic.raf = requestAnimationFrame(micLoop);
   }
