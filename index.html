@@ -1649,26 +1649,6 @@
     mic.raf = requestAnimationFrame(micLoop);
   }
   
-  function micHandleCall(now){
-    mic.callTime = now;
-    mic.state = "waiting_shot1";
-    mic.pendingShot = 0;
-    mic.pendingRT = null;
-    mic.shotIndexThisTarget = 0;
-  }
-  
-  function micHandleShot(now){
-    if(!mic.callTime) return;
-  
-    const rt = now - mic.callTime; // ms since call
-  
-    mic.shotIndexThisTarget = Math.min(2, (mic.shotIndexThisTarget || 0) + 1);
-    mic.pendingShot = mic.shotIndexThisTarget; // 1 or 2
-    mic.pendingRT = rt;
-  
-    mic.state = (mic.pendingShot === 1) ? "shot1_detected" : "shot2_detected";
-  }
-  
   function micConsumePending(){
     const out = {
       shot: mic.pendingShot || 0,
@@ -1680,13 +1660,18 @@
   }
   
   function micResetForNextTarget(){
+    // reset for next target call cycle
+    mic.state = "WAIT_CALL";
     mic.callTime = 0;
-    mic.shotIndexThisTarget = 0;
-    mic.state = "listening_call";
-    mic.pendingShot = 0;
-    mic.pendingRT = null;
+    mic.shot1Time = 0;
+    mic.shot2Time = 0;
+    mic.shot1LockedUntil = 0;
     mic.callAboveAt = 0;
+  
+    // IMPORTANT: do NOT clear pending here (pushTarget already consumed it)
+    micUI();
   }
+
 
   
   function micHandleCall(t){
@@ -1694,6 +1679,11 @@
   
     mic.callTime = t;
     mic.state = "WAIT_SHOT1";
+  
+    // clear any previous pending shot
+    mic.pendingShot = 0;
+    mic.pendingRT = null;
+  
     mic.autoShot = 1;
   }
   
@@ -1701,10 +1691,18 @@
     if(t < mic.shot1LockedUntil) return;
   
     const win = Math.max(600, Math.min(2500, Number($("shot2Win")?.value || 1600)));
+    if(!mic.callTime) return;
+  
+    // RT measured from CALL (works for both shots)
+    const rt = Math.max(0, Math.round(t - mic.callTime));
   
     if(mic.state === "WAIT_SHOT1"){
       mic.shot1Time = t;
-      mic.reactionMs = mic.callTime ? Math.max(0, Math.round(mic.shot1Time - mic.callTime)) : null;
+      mic.reactionMs = rt;
+  
+      // ✅ store pending for the grid save
+      mic.pendingShot = 1;
+      mic.pendingRT = rt;
   
       mic.state = "WAIT_SHOT2";
       mic.autoShot = 1;
@@ -1713,7 +1711,7 @@
   
       setTimeout(()=>{
         if(mic.enabled && mic.state === "WAIT_SHOT2" && !mic.shot2Time){
-          micResetCycle();
+          micResetCycle(); // back to WAIT_CALL if no 2nd shot
         }
       }, win);
   
@@ -1723,17 +1721,21 @@
     if(mic.state === "WAIT_SHOT2"){
       if(mic.shot1Time && (t - mic.shot1Time) >= 180 && (t - mic.shot1Time) <= win){
         mic.shot2Time = t;
+  
+        // ✅ overwrite pending (so if user taps after 2nd shot, it uses shot 2 RT)
+        mic.pendingShot = 2;
+        mic.pendingRT = rt;
+  
         mic.autoShot = 2;
         mic.shot1LockedUntil = t + 220;
   
         setTimeout(()=>{
-          if(mic.enabled){
-            micResetCycle();
-          }
+          if(mic.enabled) micResetCycle();
         }, 250);
       }
     }
   }
+
 
 
   function setShotUsed(n){
@@ -1784,24 +1786,26 @@
       const inSt = (i % 5) + 1;
 
       const el = document.createElement("div");
+
       if(!t){
         el.className = "shot pending";
         el.innerHTML = `<div>—</div>`;
       } else {
-        const labelTop = t.out === "H" ? "HIT" : "MISS";
+        el.className = "shot";
+        el.classList.add(t.out === "H" ? "hit" : "miss");
+      
         const labelMid = `${t.zone}`;
-        const rt = (t.reactionMs != null) ? ` • ${(t.reactionMs/1000).toFixed(2)}s` : "";
         const labelBot = t.shot === 1 ? "1st" : "2nd";
         const rtText = (typeof t.rtMs === "number") ? `${(t.rtMs/1000).toFixed(2)}s` : "—";
-        
+      
         el.innerHTML = `
           <div style="font-size:18px;font-weight:950">${labelMid}</div>
           <div class="meta">${labelBot} • ${rtText}</div>
         `;
-
-
       }
+      
       grid.appendChild(el);
+
     }
   }
 
