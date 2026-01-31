@@ -634,6 +634,45 @@
         </div>
 
         <div class="divider"></div>
+       
+        <!-- MIC MODE -->
+        <div class="card" style="margin:10px 0;background:#0f1118">
+          <div class="row" style="justify-content:space-between; align-items:center">
+            <div>
+              <div style="font-weight:950">Mic mode</div>
+              <div class="small" id="micStatus">Off</div>
+            </div>
+            <div class="row" style="gap:8px">
+              <button class="btn primary" id="micArmBtn" type="button">🎙️ ARM</button>
+              <button class="btn" id="micStopBtn" type="button" disabled>Stop</button>
+              <button class="btn danger" id="micResetBtn" type="button" disabled>Reset</button>
+            </div>
+          </div>
+        
+          <div class="divider"></div>
+        
+          <div class="row" style="justify-content:space-between; gap:10px">
+            <div class="small">
+              Call→Shot reaction: <b id="reactV">—</b>
+              <span style="opacity:.65"> • Shot auto: </span><b id="autoShotV">—</b>
+            </div>
+        
+            <div class="row" style="gap:8px; align-items:center">
+              <div style="min-width:140px">
+                <label style="margin:0 0 6px">Sensitivity</label>
+                <input id="micSens" type="number" min="1" max="100" value="35" />
+              </div>
+              <div style="min-width:160px">
+                <label style="margin:0 0 6px">2nd shot window (ms)</label>
+                <input id="shot2Win" type="number" min="600" max="2500" value="1600" />
+              </div>
+            </div>
+          </div>
+        
+          <div class="hint" style="margin-top:8px">
+            Tap ARM, call “ah”, then shoot. Best with phone on chest pocket.
+          </div>
+        </div>
 
         <div class="zonePanel">
           <div class="zoneHeader">
@@ -1355,6 +1394,213 @@
   // Shot used toggle state
   let shotUsed = 1;
 
+  /* =========================
+   MIC: call → shot1 → shot2
+   ========================= */
+  
+  let mic = {
+    enabled: false,
+    ctx: null,
+    stream: null,
+    src: null,
+    analyser: null,
+    raf: 0,
+  
+    baseline: 0,
+    smooth: 0,
+  
+    state: "OFF", // OFF | WAIT_CALL | WAIT_SHOT1 | WAIT_SHOT2
+    callTime: 0,
+    shot1Time: 0,
+    shot2Time: 0,
+    reactionMs: null,
+    autoShot: 1,
+  
+    lastEventAt: 0,
+    shot1LockedUntil: 0,
+  };
+  
+  function micUI(){
+    const on = mic.enabled;
+    $("micStopBtn").disabled = !on;
+    $("micResetBtn").disabled = !on;
+    $("micArmBtn").disabled = on;
+  
+    $("micStatus").textContent =
+      !on ? "Off" :
+      (mic.state === "WAIT_CALL") ? "Listening for CALL (ah/oh)..." :
+      (mic.state === "WAIT_SHOT1") ? "Call detected — waiting for SHOT 1..." :
+      (mic.state === "WAIT_SHOT2") ? "Shot 1 detected — waiting for SHOT 2 (optional)..." :
+      "On";
+  
+    $("reactV").textContent = (mic.reactionMs == null) ? "—" : `${(mic.reactionMs/1000).toFixed(2)}s`;
+    $("autoShotV").textContent = mic.enabled ? (mic.autoShot === 1 ? "1st" : "2nd") : "—";
+  }
+  
+  function micResetCycle(){
+    mic.state = "WAIT_CALL";
+    mic.callTime = 0;
+    mic.shot1Time = 0;
+    mic.shot2Time = 0;
+    mic.reactionMs = null;
+    mic.autoShot = 1;
+    mic.lastEventAt = 0;
+    mic.shot1LockedUntil = 0;
+    micUI();
+  }
+  
+  async function micStart(){
+    if(mic.enabled) return;
+  
+    try{
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation:false, noiseSuppression:false, autoGainControl:false }
+      });
+  
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const src = ctx.createMediaStreamSource(stream);
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 2048;
+  
+      src.connect(analyser);
+  
+      mic.enabled = true;
+      mic.stream = stream;
+      mic.ctx = ctx;
+      mic.src = src;
+      mic.analyser = analyser;
+  
+      mic.baseline = 0;
+      mic.smooth = 0;
+  
+      micResetCycle();
+      micLoop();
+    }catch(err){
+      alert("Mic permission denied or not available.");
+      console.error(err);
+    }
+  }
+  
+  function micStop(){
+    if(!mic.enabled) return;
+  
+    cancelAnimationFrame(mic.raf);
+    mic.raf = 0;
+  
+    try{ mic.stream && mic.stream.getTracks().forEach(t=>t.stop()); }catch{}
+    try{ mic.ctx && mic.ctx.close(); }catch{}
+  
+    mic.enabled = false;
+    mic.ctx = null;
+    mic.stream = null;
+    mic.src = null;
+    mic.analyser = null;
+  
+    mic.state = "OFF";
+    mic.reactionMs = null;
+    mic.autoShot = 1;
+  
+    micUI();
+  }
+  
+  function micRMS(){
+    const a = mic.analyser;
+    if(!a) return 0;
+  
+    const buf = new Uint8Array(a.fftSize);
+    a.getByteTimeDomainData(buf);
+  
+    let sum = 0;
+    for(let i=0;i<buf.length;i++){
+      const v = (buf[i] - 128) / 128;
+      sum += v*v;
+    }
+    return Math.sqrt(sum / buf.length);
+  }
+  
+  function micLoop(){
+    if(!mic.enabled) return;
+  
+    const now = performance.now();
+    const rms = micRMS();
+  
+    mic.smooth = mic.smooth * 0.85 + rms * 0.15;
+  
+    const cap = 0.12;
+    const ambient = Math.min(mic.smooth, cap);
+    mic.baseline = mic.baseline * 0.995 + ambient * 0.005;
+  
+    const sens = Math.max(1, Math.min(100, Number($("micSens")?.value || 35)));
+    const thresh = mic.baseline + (0.10 - sens/1000);
+  
+    const isPeak = mic.smooth > thresh && (now - mic.lastEventAt) > 120;
+  
+    if(isPeak){
+      const amp = mic.smooth - mic.baseline;
+  
+      const SHOT_AMP = 0.10;
+      const CALL_AMP = 0.03;
+  
+      if(amp >= SHOT_AMP){
+        micHandleShot(now);
+      }else if(amp >= CALL_AMP){
+        micHandleCall(now);
+      }
+  
+      mic.lastEventAt = now;
+    }
+  
+    micUI();
+    mic.raf = requestAnimationFrame(micLoop);
+  }
+  
+  function micHandleCall(t){
+    if(mic.state !== "WAIT_CALL") return;
+  
+    mic.callTime = t;
+    mic.state = "WAIT_SHOT1";
+    mic.autoShot = 1;
+  }
+  
+  function micHandleShot(t){
+    if(t < mic.shot1LockedUntil) return;
+  
+    const win = Math.max(600, Math.min(2500, Number($("shot2Win")?.value || 1600)));
+  
+    if(mic.state === "WAIT_SHOT1"){
+      mic.shot1Time = t;
+      mic.reactionMs = mic.callTime ? Math.max(0, Math.round(mic.shot1Time - mic.callTime)) : null;
+  
+      mic.state = "WAIT_SHOT2";
+      mic.autoShot = 1;
+  
+      mic.shot1LockedUntil = t + 220;
+  
+      setTimeout(()=>{
+        if(mic.enabled && mic.state === "WAIT_SHOT2" && !mic.shot2Time){
+          micResetCycle();
+        }
+      }, win);
+  
+      return;
+    }
+  
+    if(mic.state === "WAIT_SHOT2"){
+      if(mic.shot1Time && (t - mic.shot1Time) >= 180 && (t - mic.shot1Time) <= win){
+        mic.shot2Time = t;
+        mic.autoShot = 2;
+        mic.shot1LockedUntil = t + 220;
+  
+        setTimeout(()=>{
+          if(mic.enabled){
+            micResetCycle();
+          }
+        }, 250);
+      }
+    }
+  }
+
+
   function setShotUsed(n){
     shotUsed = n;
     $("shot1Btn").classList.toggle("active", n===1);
@@ -1409,7 +1655,8 @@
       } else {
         const labelTop = t.out === "H" ? "HIT" : "MISS";
         const labelMid = `${t.zone}`;
-        const labelBot = t.shot === 1 ? "1st Shot" : "2nd Shot";
+        const rt = (t.reactionMs != null) ? ` • ${(t.reactionMs/1000).toFixed(2)}s` : "";
+        const labelBot = (t.shot === 1 ? "1st Shot" : "2nd Shot") + rt;
         el.className = `shot ${t.out==="H" ? "hit" : "miss"}`;
         el.style.background = t.out==="H" ? "rgba(34,197,94,.08)" : "rgba(239,68,68,.08)";
         el.style.color = t.out==="H" ? "var(--g1)" : "var(--r1)";
@@ -1427,13 +1674,27 @@
   function pushTarget(out, zone){
     if(liveTargets.length >= 25) return;
   
-    // ✅ Misses are ALWAYS 2nd shot automatically
-    // ✅ Hits use the toggle (shotUsed)
-    const shot = (out === "M") ? 2 : shotUsed;
+    // Misses are ALWAYS 2nd shot
+    if(out === "M"){
+      liveTargets.push({ out, zone, shot: 2, reactionMs: mic.reactionMs ?? null });
+      renderLive();
+      return;
+    }
   
-    liveTargets.push({ out, zone, shot });
+    // Hits:
+    // If mic mode is ON, use mic.autoShot (1 or 2)
+    // Otherwise use manual toggle (shotUsed)
+    const shot = (mic.enabled ? mic.autoShot : shotUsed);
+  
+    liveTargets.push({ out, zone, shot, reactionMs: mic.reactionMs ?? null });
     renderLive();
+  
+    // If mic thought we were on shot2, reset for next target
+    if(mic.enabled && mic.autoShot === 2){
+      micResetCycle();
+    }
   }
+
 
 
   // Wire zone buttons
@@ -1448,6 +1709,20 @@
   $("undoBtn").addEventListener("click", ()=>{
     liveTargets.pop();
     renderLive();
+  });
+  
+  // ---- Mic controls ----
+  $("micArmBtn").addEventListener("click", async ()=>{
+    await micStart();
+    micUI();
+  });
+  
+  $("micStopBtn").addEventListener("click", ()=>{
+    micStop();
+  });
+  
+  $("micResetBtn").addEventListener("click", ()=>{
+    micResetCycle();
   });
 
   $("resetRoundBtn").addEventListener("click", ()=>{
@@ -2755,6 +3030,7 @@ $("exportPdfBtn").addEventListener("click", exportSavedRoundsPDF);
     renderOverview();
     renderCartridgesSection();
     renderSaved();
+    micUI();
   }
 
 
