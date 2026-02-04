@@ -674,17 +674,13 @@
     </div>
 
     <!-- TABS -->
-    <div class="tabsBar" role="tablist" aria-label="App tabs">
-      <button class="tabBtn active" id="tabLiveBtn" type="button" role="tab" aria-selected="true" aria-controls="panelLive">
-        Live Round
-      </button>
-      <button class="tabBtn" id="tabOverviewBtn" type="button" role="tab" aria-selected="false" aria-controls="panelOverview">
-        Overview
-      </button>
-      <button class="tabBtn" id="tabCompBtn" type="button" role="tab" aria-selected="false" aria-controls="panelComp">
-        Competition + Saved
-      </button>
+    <div class="tabsBar" role="tablist">
+      <button class="tabBtn active" id="tabLiveBtn">Live</button>
+      <button class="tabBtn" id="tabOverviewBtn">Performance</button>
+      <button class="tabBtn" id="tabSavedBtn">Saved</button>
+      <button class="tabBtn" id="tabCompBtn">Competition</button>
     </div>
+
 
     <!-- ======================
          TAB 1 — LIVE ROUND
@@ -1061,10 +1057,70 @@
       </div>
     </section>
 
+
+    <section id="panelSaved" class="tabPanel hidden">
+      <!-- SAVED ROUNDS -->
+      <div class="card" style="background:#111214">
+        <div class="row" style="justify-content:space-between">
+          <div>
+            <div style="font-weight:950;font-size:16px">Saved Rounds</div>
+            <div class="small" id="countLine">0 total</div>
+          </div>
+
+          <div class="row" style="gap:8px; align-items:flex-end">
+            <div style="min-width:130px">
+              <label style="margin:0 0 6px"></label>
+              <input id="savedDate" type="date" disabled />
+            </div>
+
+            <button class="btn primary" id="exportPdfBtn" type="button">Export PDF</button>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="filters" style="display:grid;gap:5px;grid-template-columns: 1fr 1fr 1fr;">
+          <div>
+            <label>Show</label>
+            <select id="savedRange">
+              <option value="today">Today</option>
+              <option value="week">This week</option>
+              <option value="month" selected>This month</option>
+              <option value="last3">Last 3 months</option>
+              <option value="last6">Last 6 months</option>
+              <option value="year">This year</option>
+              <option value="all">All rounds</option>
+              <option value="day">A specific day…</option>
+            </select>
+          </div>
+
+          <div>
+            <label>Club</label>
+            <select id="savedClub">
+              <option value="all">All clubs</option>
+            </select>
+          </div>
+
+          <div>
+            <label>Field</label>
+            <select id="savedField">
+              <option value="all">All fields</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="list" id="list"></div>
+        <div id="empty" class="small" style="display:none;margin-top:10px">No rounds found for these filters.</div>
+      </div>
+      </div>
+    </section>
+   
     <!-- ======================
-         TAB 3 — COMPETITION + SAVED
+         TAB 3 — COMPETITION 
          ====================== -->
-    <section id="panelComp" class="tabPanel hidden" role="tabpanel" aria-labelledby="tabCompBtn">
+    <section id="panelComp" class="tabPanel hidden">
 
       <!-- COMPETITION LOG -->
       <div class="pageTopbar" style="margin-top:4px">
@@ -1165,64 +1221,7 @@
         <div class="list" id="compList" style="grid-template-columns:1fr"></div>
         <div id="compEmpty" class="small" style="display:none;margin-top:10px">No competitions yet. Tap “+ New”.</div>
       </div>
-
-      <div class="divider"></div>
-
-      <!-- SAVED ROUNDS -->
-      <div class="card" style="margin-top:12px; background:#111214">
-        <div class="row" style="justify-content:space-between">
-          <div>
-            <div style="font-weight:950;font-size:16px">Saved Rounds</div>
-            <div class="small" id="countLine">0 total</div>
-          </div>
-
-          <div class="row" style="gap:8px; align-items:flex-end">
-            <div style="min-width:130px">
-              <label style="margin:0 0 6px"></label>
-              <input id="savedDate" type="date" disabled />
-            </div>
-
-            <button class="btn primary" id="exportPdfBtn" type="button">Export PDF</button>
-          </div>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="filters" style="display:grid;gap:5px;grid-template-columns: 1fr 1fr 1fr;">
-          <div>
-            <label>Show</label>
-            <select id="savedRange">
-              <option value="today">Today</option>
-              <option value="week">This week</option>
-              <option value="month" selected>This month</option>
-              <option value="last3">Last 3 months</option>
-              <option value="last6">Last 6 months</option>
-              <option value="year">This year</option>
-              <option value="all">All rounds</option>
-              <option value="day">A specific day…</option>
-            </select>
-          </div>
-
-          <div>
-            <label>Club</label>
-            <select id="savedClub">
-              <option value="all">All clubs</option>
-            </select>
-          </div>
-
-          <div>
-            <label>Field</label>
-            <select id="savedField">
-              <option value="all">All fields</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="list" id="list"></div>
-        <div id="empty" class="small" style="display:none;margin-top:10px">No rounds found for these filters.</div>
-      </div>
+      
     </section>
 
   </div><!-- /.wrap -->
@@ -1272,29 +1271,27 @@
   // =========================
   function setActiveTab(tab){
     const tabs = [
-      { btn: $("tabLiveBtn"), panel: $("panelLive") },
-      { btn: $("tabOverviewBtn"), panel: $("panelOverview") },
-      { btn: $("tabCompBtn"), panel: $("panelComp") },
+      { key:"live",     btn:tabLiveBtn,     panel:panelLive },
+      { key:"overview", btn:tabOverviewBtn, panel:panelOverview },
+      { key:"saved",    btn:tabSavedBtn,    panel:panelSaved },
+      { key:"comp",     btn:tabCompBtn,     panel:panelComp },
     ];
   
     tabs.forEach(t=>{
-      const isOn =
-        (tab === "live" && t.btn === $("tabLiveBtn")) ||
-        (tab === "overview" && t.btn === $("tabOverviewBtn")) ||
-        (tab === "comp" && t.btn === $("tabCompBtn"));
-  
-      t.btn.classList.toggle("active", isOn);
-      t.btn.setAttribute("aria-selected", isOn ? "true" : "false");
-      t.panel.classList.toggle("hidden", !isOn);
+      const on = t.key === tab;
+      t.btn.classList.toggle("active", on);
+      t.panel.classList.toggle("hidden", !on);
     });
   
-    // When opening comp tab, always refresh competition list
+    // Refresh data only when needed
+    if(tab === "saved") renderSavedRounds();
     if(tab === "comp"){
       competitions = loadCompetitions();
       applyCompThemeToCards();
       renderCompList();
     }
   }
+
   
   $("tabLiveBtn").addEventListener("click", ()=> setActiveTab("live"));
   $("tabOverviewBtn").addEventListener("click", ()=> setActiveTab("overview"));
@@ -3293,6 +3290,13 @@ $("exportPdfBtn").addEventListener("click", exportSavedRoundsPDF);
   $("savedDate").addEventListener("change", renderSaved);
   $("savedClub").addEventListener("change", renderSaved);
   $("savedField").addEventListener("change", renderSaved);
+
+  // Tabs
+  $("tabLiveBtn").addEventListener("click", ()=> setActiveTab("live"));
+  $("tabOverviewBtn").addEventListener("click", ()=> setActiveTab("overview"));
+  $("tabSavedBtn").addEventListener("click", ()=> setActiveTab("saved"));
+  $("tabCompBtn").addEventListener("click", ()=> setActiveTab("comp"));
+
 
   function openProfileModal(){
     $("profileModal").classList.add("open");
