@@ -757,14 +757,10 @@
             <div class="zoneHeader">
               <div class="small"></div>
 
-              <div class="row" style="gap:8px">
-                <div class="small" style="font-weight:900">Hit shot</div>
-                <div class="seg" role="tablist" aria-label="Hit shot">
-                  <button id="shot1Btn" class="active" type="button">1st</button>
-                  <button id="shot2Btn" type="button">2nd</button>
-                </div>
-                <div class="hint" style="margin-left:0px">Applies to HITS only • MISS = 2nd shot</div>
+              <div class="hint" style="margin:0">
+                Tap = 1st shot • Double-tap = 2nd shot (for both HIT & MISS)
               </div>
+
 
               <div class="row" style="gap:8px; margin-top:8px">
                 <button class="btn" id="autoShotBtn" type="button">Auto shot: ON</button>
@@ -1508,8 +1504,6 @@
     return Math.min(4, Math.floor(i/5));
   }
 
-  // Shot used toggle state
-  let shotUsed = 1;
 
   /* =========================
    MIC: call → shot1 → shot2
@@ -1818,16 +1812,6 @@
     }
   }
 
-
-
-  function setShotUsed(n){
-    shotUsed = n;
-    $("shot1Btn").classList.toggle("active", n===1);
-    $("shot2Btn").classList.toggle("active", n===2);
-  }
-  $("shot1Btn").addEventListener("click", ()=>setShotUsed(1));
-  $("shot2Btn").addEventListener("click", ()=>setShotUsed(2));
-
   function zoneClass(out, zone){
     if(out === "H"){
       return zone==="HL" ? "hitHL" :
@@ -1891,27 +1875,29 @@
     }
   }
 
-  function pushTarget(out, zone){
+  function pushTarget(out, zone, shotOverride){
     if(liveTargets.length >= 25) return;
   
     // pull pending mic info (if any)
     const pending = micConsumePending(); // {shot, rtMs}
   
-    let shot = 0;
+    let shot = 1;
   
-    // Auto shot assignment when mic detected it
+    // If mic auto-shot is ON and it detected 1st/2nd, it wins
     if(mic.autoShotMode && (pending.shot === 1 || pending.shot === 2)){
       shot = pending.shot;
+    } else if(shotOverride === 1 || shotOverride === 2){
+      // Otherwise use tap logic
+      shot = shotOverride;
     } else {
-      // fallback to your current logic (manual toggle + miss rule)
-      shot = (out === "M") ? 2 : shotUsed;
+      shot = 1;
     }
   
     liveTargets.push({
       out,
       zone,
       shot,
-      rtMs: pending.rtMs   // ✅ reaction time stored per target
+      rtMs: pending.rtMs
     });
   
     // ready for next target
@@ -1921,18 +1907,50 @@
   }
 
 
-
-
-  // Wire zone buttons
+  // ---- Tap (1st) vs Double-tap (2nd) on zone buttons ----
+  let tapTimer = null;
+  let lastTapBtn = null;
+  const DOUBLE_TAP_MS = 280;
+  
+  function clearTapTimer(){
+    if(tapTimer){
+      clearTimeout(tapTimer);
+      tapTimer = null;
+    }
+    lastTapBtn = null;
+  }
+  
+  // Wire zone buttons (single = 1st, double = 2nd)
   document.querySelectorAll(".zoneBtn").forEach(btn=>{
     btn.addEventListener("click", ()=>{
+      if(liveTargets.length >= 25) return;
+  
       const out = btn.getAttribute("data-out");
       const zone = btn.getAttribute("data-zone");
-      pushTarget(out, zone);
+  
+      // If the same button is tapped again before timer fires → double tap
+      if(tapTimer && lastTapBtn === btn){
+        clearTapTimer();
+        pushTarget(out, zone, 2); // double tap = 2nd shot
+        return;
+      }
+  
+      // Otherwise, schedule single tap action (so we can "wait" for possible 2nd tap)
+      clearTapTimer();
+      lastTapBtn = btn;
+  
+      tapTimer = setTimeout(()=>{
+        tapTimer = null;
+        lastTapBtn = null;
+        pushTarget(out, zone, 1); // single tap = 1st shot
+      }, DOUBLE_TAP_MS);
     });
   });
 
+
+  
   $("undoBtn").addEventListener("click", ()=>{
+    clearTapTimer();
     liveTargets.pop();
     renderLive();
   });
@@ -1959,6 +1977,7 @@
 
 
   $("resetRoundBtn").addEventListener("click", ()=>{
+    clearTapTimer();
     liveTargets = [];
     renderLive();
   });
