@@ -1947,7 +1947,9 @@
     lastTapBtn = null;
   }
   
-  // Wire zone buttons (single = 1st, double = 2nd)
+  // Wire zone buttons:
+  // - HIT: single = 1st, double = 2nd
+  // - MISS: always 2nd (no double tap needed)
   document.querySelectorAll(".zoneBtn").forEach(btn=>{
     btn.addEventListener("click", ()=>{
       if(liveTargets.length >= 25) return;
@@ -1955,24 +1957,31 @@
       const out = btn.getAttribute("data-out");
       const zone = btn.getAttribute("data-zone");
   
-      // If the same button is tapped again before timer fires → double tap
-      if(tapTimer && lastTapBtn === btn){
+      // ✅ MISSES → always 2nd shot, no waiting
+      if(out === "M"){
         clearTapTimer();
-        pushTarget(out, zone, 2); // double tap = 2nd shot
+        pushTarget(out, zone, 2);
         return;
       }
   
-      // Otherwise, schedule single tap action (so we can "wait" for possible 2nd tap)
+      // ✅ HITS → keep your single/double tap behavior
+      if(tapTimer && lastTapBtn === btn){
+        clearTapTimer();
+        pushTarget(out, zone, 2);
+        return;
+      }
+  
       clearTapTimer();
       lastTapBtn = btn;
   
       tapTimer = setTimeout(()=>{
         tapTimer = null;
         lastTapBtn = null;
-        pushTarget(out, zone, 1); // single tap = 1st shot
+        pushTarget(out, zone, 1);
       }, DOUBLE_TAP_MS);
     });
   });
+
 
 
   
